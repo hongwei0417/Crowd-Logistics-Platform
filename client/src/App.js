@@ -31,11 +31,7 @@ class App extends Component {
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       this.setState({ web3, accounts, contract: instance });
-      
-      var database = firebase.database();
 
-      const name = await database.ref("Sender/001/name").once('value')
-      console.log(name.val())
 
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -64,20 +60,38 @@ class App extends Component {
     .send({ from: accounts[0], gas: 4712388, gasPrice: 100000000000 })
 
 
+
+    const orders_snapshot = await firebase.database().ref("Sender/001/address").once('value')
+
+    const orders = [...orders_snapshot.val(), newContract.options.address]
+
+    await firebase.database().ref("Sender/001/address").set(orders)
+
+    console.log(orders)
+
     console.log(newContract)
 
   };
 
   get_order = async () => {
 
+    const { accounts, contract, address } = this.state;
 
-    const { accounts, contract } = this.state;
+    if(address == null) return;
 
-    contract.options.address = "0x3f3E356CF7cAe275ab24c2f60E11eb60B14bC8Cd"
+    const user = await firebase.database().ref("Sender/001").once('value')
+    console.log(user)
+    
+  
+    contract.options.address = address //設定呼叫合約地址
 
-    const response = await contract.methods.get_order_info().call({from: accounts[0]})
+    const data = await contract.methods.get_order_info().call({from: accounts[0]})
+    
+    
+    console.log(user.val())
+    console.log(data)
 
-    console.log(response)
+    
   }
 
 
@@ -92,6 +106,7 @@ class App extends Component {
     console.log(this.state.service)
   }
 
+
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -102,75 +117,104 @@ class App extends Component {
           <Button onClick={this.place_order}>寄件方</Button>
           <Button onClick={this.test}>司機方</Button>
         </div>
-        <Form>
-          <Form.Group>
-            <Form.Label>選擇服務</Form.Label>
-            <Row>
-              <Col>
-                <Form.Check type="radio" label="機車" name="radios1" id="rd1" onChange={() => this.setState({ service: 0})}/>
-              </Col>
-              <Col>
-                <Form.Check type="radio" label="貨車" name="radios1" id="rd2" onChange={() => this.setState({ service: 1})}/>
-              </Col>
-            </Row>
-          </Form.Group>
+        <div>
+          <div className="block1">
+            <Form>
+              <Form.Group>
+                <Form.Label>選擇服務</Form.Label>
+                <Row>
+                  <Col>
+                    <Form.Check type="radio" label="機車" name="radios1" id="rd1" onChange={() => this.setState({ service: 0})}/>
+                  </Col>
+                  <Col>
+                    <Form.Check type="radio" label="貨車" name="radios1" id="rd2" onChange={() => this.setState({ service: 1})}/>
+                  </Col>
+                </Row>
+              </Form.Group>
 
-          <Form.Group>
-            <Form.Label>是否為急件</Form.Label>
-            <Row>
-              <Col>
-                <Form.Check type="radio" label="是" name="radios2" id="rd3" onChange={() => this.setState({ isUrgent: true})}/>
-              </Col>
-              <Col>
-                <Form.Check type="radio" label="否" name="radios2" id="rd4" onChange={() => this.setState({ isUrgent: false})}/>
-              </Col>
-            </Row>
-          </Form.Group>
+              <Form.Group>
+                <Form.Label>是否為急件</Form.Label>
+                <Row>
+                  <Col>
+                    <Form.Check type="radio" label="是" name="radios2" id="rd3" onChange={() => this.setState({ isUrgent: true})}/>
+                  </Col>
+                  <Col>
+                    <Form.Check type="radio" label="否" name="radios2" id="rd4" onChange={() => this.setState({ isUrgent: false})}/>
+                  </Col>
+                </Row>
+              </Form.Group>
 
-          <Form.Group>
-            <Form.Label>貨品大小</Form.Label>
-            <Row>
-              <Col>
-                <Form.Check type="radio" label="小" name="radios3" id="rd5" onChange={() => this.setState({ boxSize: 100})}/>
-              </Col>
-              <Col>
-                <Form.Check type="radio" label="中" name="radios3" id="rd6" onChange={() => this.setState({ boxSize: 500})}/>
-              </Col>
-              <Col>
-                <Form.Check type="radio" label="大" name="radios3" id="rd7" onChange={() => this.setState({ boxSize: 1000})}/>
-              </Col>
-            </Row>
-          </Form.Group>
+              <Form.Group>
+                <Form.Label>貨品大小</Form.Label>
+                <Row>
+                  <Col>
+                    <Form.Check type="radio" label="小" name="radios3" id="rd5" onChange={() => this.setState({ boxSize: 100})}/>
+                  </Col>
+                  <Col>
+                    <Form.Check type="radio" label="中" name="radios3" id="rd6" onChange={() => this.setState({ boxSize: 500})}/>
+                  </Col>
+                  <Col>
+                    <Form.Check type="radio" label="大" name="radios3" id="rd7" onChange={() => this.setState({ boxSize: 1000})}/>
+                  </Col>
+                </Row>
+              </Form.Group>
 
-          <Form.Group>
-            <Form.Label>寄件日期時間</Form.Label>
-            <Form.Control type="datetime-local" onChange={(e) => this.convert_date(e.target.value)}/>
-          </Form.Group>
+              <Form.Group>
+                <Form.Label>寄件日期時間</Form.Label>
+                <Form.Control type="datetime-local" onChange={(e) => this.convert_date(e.target.value)}/>
+              </Form.Group>
+              
+              <Form.Group>
+                <Form.Label>貨物起點</Form.Label>
+                <Form.Control type="input" placeholder="起點地址" onChange={(e) => this.setState({ delivery_start_location: e.target.value})}/>
+              </Form.Group>
+
+              <Form.Group>
+                <Form.Label>貨物終點</Form.Label>
+                <Form.Control type="input" placeholder="迄點地址" onChange={(e) => this.setState({ delivery_end_location: e.target.value})}/>
+              </Form.Group>
+
+              <Form.Group>
+                <Form.Label>收件人</Form.Label>
+                <Form.Control type="input" placeholder="收件人姓名" onChange={(e) => this.setState({ recipient_name: e.target.value})}/>
+              </Form.Group>
+
+              <Form.Group>
+                <Form.Label>收件人聯絡方式</Form.Label>
+                <Form.Control type="input" placeholder="手機 or 電話" onChange={(e) => this.setState({ recipient_contact: e.target.value})}/>
+              </Form.Group>
+
+              <Button variant="primary" onClick={this.place_order}>
+                送出訂單
+              </Button>
+            </Form>
+          </div>
           
-          <Form.Group>
-            <Form.Label>貨物起點</Form.Label>
-            <Form.Control type="input" placeholder="起點地址" onChange={(e) => this.setState({ delivery_start_location: e.target.value})}/>
-          </Form.Group>
+          <div className="block2">
+            <Row>
+              <Col md={9}>
+                <Form.Control type="search" placeholder="帳戶地址" onChange={(e) => this.setState({ address: e.target.value})}/>
+              </Col>
+              <Col>
+                <Button className="search" onClick={this.get_order}>搜尋</Button>
+              </Col>
+            </Row>
+            
+            <div>
+              <div>寄送者名稱：{}</div>
+              <div>寄送者帳戶地址：{}</div>
+              <div>選擇服務：{}</div>
+              <div>是否為急件：{}</div>
+              <div>箱子大小：{}</div>
+              <div>運送時間：{}</div>
+              <div>運送起點：{}</div>
+              <div>運送終點：{}</div>
+              <div>收件者姓名：{}</div>
+              <div>收件者聯絡方式：{}</div>
+            </div>
 
-          <Form.Group>
-            <Form.Label>貨物終點</Form.Label>
-            <Form.Control type="input" placeholder="迄點地址" onChange={(e) => this.setState({ delivery_end_location: e.target.value})}/>
-          </Form.Group>
-
-          <Form.Group>
-            <Form.Label>收件人</Form.Label>
-            <Form.Control type="input" placeholder="收件人姓名" onChange={(e) => this.setState({ recipient_name: e.target.value})}/>
-          </Form.Group>
-
-          <Form.Group>
-            <Form.Label>收件人聯絡方式</Form.Label>
-            <Form.Control type="input" placeholder="手機 or 電話" onChange={(e) => this.setState({ recipient_contact: e.target.value})}/>
-          </Form.Group>
-
-          <Button variant="primary" onClick={this.place_order}>
-            送出訂單
-          </Button>
-        </Form>
+          </div>
+        </div>
       </div>
     );
   }

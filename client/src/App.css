@@ -43,9 +43,22 @@
   margin-right: 20px;
 }
 
+form {
+  width: 70%;
+}
+
 
 .search {
   width: 100%;
+}
+
+
+.result_section {
+  padding-top: 50px;  
+}
+
+.contract_addr {
+  color: 'red';
 }
 
 

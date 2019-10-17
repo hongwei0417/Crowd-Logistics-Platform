@@ -4,9 +4,6 @@ import Sender from "./contracts/Sender.json";
 import getWeb3 from "./utils/getWeb3";
 import firebase from "firebase/app"
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link
 } from "react-router-dom";
 import "firebase/database";
@@ -19,8 +16,6 @@ class Sender_Page extends Component {
   componentDidMount = async () => {
     
     try {
-
-      console.log(1)
       // Get network provider and web3 instance.
       const web3 = await getWeb3();
 
@@ -35,9 +30,6 @@ class Sender_Page extends Component {
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       this.setState({ web3, accounts, contract: instance });
-
-      console.log(web3)
-
 
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -114,6 +106,8 @@ class Sender_Page extends Component {
 
     const user = await firebase.database().ref("Sender/001").once('value')
     console.log(user.val())
+
+    const { name, phone_number, sex } = user.val()
     
     console.log(data)
 
@@ -121,8 +115,11 @@ class Sender_Page extends Component {
 
     console.log(data[0])
     const order_info = {
-      userName: user.val().name,
+      userName: name,
+      contract_addr: address,
       userAddr: accounts[0],
+      sex: sex == 1 ? "男性" : "女性",
+      phone_number: phone_number,
       delivery_time: dt.toLocaleString(),
       delivery_start_location: data[1],
       delivery_end_location: data[2],
@@ -131,7 +128,6 @@ class Sender_Page extends Component {
       service: data[5] ? "機車" : "貨車",
       isUrgent: data[6] ? "是" : "否",
       boxSize: data[7],
-      contract_addr: address
     }
 
     this.setState({order_info})
@@ -154,12 +150,14 @@ class Sender_Page extends Component {
     if(this.state.order_info) {
       const { userName, userAddr, service, isUrgent, boxSize, 
         delivery_time, delivery_start_location, delivery_end_location,
-        recipient_name, recipient_contact, contract_addr } = this.state.order_info
+        recipient_name, recipient_contact, contract_addr, phone_number, sex} = this.state.order_info
       return (
         <div className="result_section">
           <div>寄送者名稱：{userName}</div>
+          <div>寄送者性別：{sex}</div>
           <div>寄送者帳戶地址：{userAddr}</div>
-          <div>合約地址：{contract_addr}</div>
+          <div>寄送者連絡電話：{phone_number}</div>
+          <div>客戶合約地址：{contract_addr}</div>
           <div>選擇服務：{service}</div>
           <div>是否為急件：{isUrgent}</div>
           <div>箱子大小：{boxSize}</div>

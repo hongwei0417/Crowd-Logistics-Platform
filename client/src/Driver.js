@@ -1,12 +1,9 @@
 import React, { Component } from "react";
 import { Button, Form, Row, Col } from 'react-bootstrap'
-import Sender from "./contracts/Sender.json";
+import Driver from "./contracts/Driver.json";
 import getWeb3 from "./utils/getWeb3";
 import firebase from "firebase/app"
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link
 } from "react-router-dom";
 import "firebase/database";
@@ -14,14 +11,13 @@ import "./App.css";
 
 
 class Driver_Page extends Component {
-  state = { web3: null, accounts: null, contract: null, order_info: null};
+  state = { web3: null, accounts: null, contract: null, driver_info: null};
 
   
   componentDidMount = async () => {
     
     try {
 
-      console.log(2)
       // Get network provider and web3 instance.
       const web3 = await getWeb3();
       // Use web3 to get the user's accounts.
@@ -29,13 +25,13 @@ class Driver_Page extends Component {
       console.log(accounts)
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = Sender.networks[networkId];
-      const instance = new web3.eth.Contract(Sender.abi, deployedNetwork && deployedNetwork.address);
+      const deployedNetwork = Driver.networks[networkId];
+      const instance = new web3.eth.Contract(Driver.abi, deployedNetwork && deployedNetwork.address);
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       this.setState({ web3, accounts, contract: instance });
-      console.log(web3)
+
 
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -47,27 +43,23 @@ class Driver_Page extends Component {
   };
 
   place_order = async () => {
-    const { accounts, contract, service, isUrgent, boxSize, delivery_time, delivery_start_location, delivery_end_location, recipient_name, recipient_contact } = this.state;
+    const { accounts, contract, service, delivery_start_time, delivery_end_time, regular_place } = this.state;
 
     if (service == null ) { alert("service!"); return}
-    if (isUrgent == null ) { alert("isUrgent!"); return}
-    if (boxSize == null ) { alert("boxSize!"); return}
-    if (delivery_time == null ) { alert("delivery_time!"); return}
-    if (delivery_start_location == null ) { alert("delivery_start_location!"); return}
-    if (delivery_end_location == null ) { alert("delivery_end_location!"); return}
-    if (recipient_name == null ) { alert("recipient_name!"); return}
-    if (recipient_contact == null ) { alert("recipient_contact!"); return}
+    if (delivery_start_time == null ) { alert("delivery_start_time!"); return}
+    if (delivery_end_time == null ) { alert("delivery_end_time!"); return}
+    if (regular_place == null ) { alert("regular_place!"); return}
 
 
     // const newContract = web3.eth.Contract(Sender.abi, address, options)
 
 
-    const order_info = [delivery_time, delivery_start_location, delivery_end_location, recipient_name, recipient_contact, service, isUrgent, boxSize]
-    const contract_options = { data: Sender.bytecode, arguments: order_info }
-    const send_options = { from: accounts[0], gas: 4712388, gasPrice: 100000000000 }
+    const driver_info = [service, delivery_start_time, delivery_end_time, regular_place]
+    const contract_options = { data: Driver.bytecode, arguments: driver_info }
+    const send_options = { from: accounts[1], gas: 4712388, gasPrice: 100000000000 }
 
     let receipt;
-    contract.options.from = accounts[0]
+    contract.options.from = await accounts[1]
     const newContract = await contract.deploy(contract_options)
       .send(send_options, this.handle_error_and_tx)
       .on('receipt', (rcp) => {
@@ -75,9 +67,7 @@ class Driver_Page extends Component {
         console.log(receipt)
       })
     
-    const data = {};
-    data[receipt.transactionHash] = receipt.contractAddress
-    await firebase.database().ref("Sender/001/order_addresses").update(data)
+    await firebase.database().ref("Driver/001/eth_address").set(receipt.contractAddress)
 
     this.setState({ contract_addr: receipt.contractAddress })
     console.log(newContract)
@@ -103,43 +93,51 @@ class Driver_Page extends Component {
     let data;
     try {
       contract.options.address = address //設定呼叫合約地址
-      data = await contract.methods.get_order_info().call({from: accounts[0]})
+      data = await contract.methods.get_driver_info().call({from: accounts[1]})
     } catch(e) {
       console.log(e)
       alert("查無此合約地址")
       return
     }
 
-    const user = await firebase.database().ref("Sender/001").once('value')
+    const user = await firebase.database().ref("Driver/001").once('value')
+    const { eth_address, license_plate, name, sex, phone_number } = user.val()
     console.log(user.val())
     
     console.log(data)
 
-    let dt = new Date(parseInt(data[0]))
+    // let dst = new Date(parseInt(data[1]))
+    // let det = new Date(parseInt(data[2]))
 
     console.log(data[0])
-    const order_info = {
-      userName: user.val().name,
-      userAddr: accounts[0],
-      delivery_time: dt.toLocaleString(),
-      delivery_start_location: data[1],
-      delivery_end_location: data[2],
-      recipient_name: data[3],
-      recipient_contact: data[4],
-      service: data[5] ? "機車" : "貨車",
-      isUrgent: data[6] ? "是" : "否",
-      boxSize: data[7],
-      contract_addr: address
+    const driver_info = {
+      userName: name,
+      userAddr: accounts[1],
+      contract_addr: eth_address,
+      license_plate: license_plate,
+      sex: sex == 1 ? "男性" : "女性",
+      phone_number: phone_number,
+      service: data[0] ? "機車" : "貨車",
+      delivery_start_time: data[1],
+      delivery_end_time: data[2],
+      regular_place: data[3]
     }
 
-    this.setState({order_info})
+    this.setState({driver_info})
   }
 
 
-  convert_date = (datetime) => {
-    let date = new Date(datetime)
+  convert_start_time = (t) => {
+    let time = new Date(t)
+    console.log(t)
 
-    this.setState({ delivery_time: date.valueOf()})
+    this.setState({ delivery_start_time: t})
+  }
+
+  convert_end_time = (t) => {
+    let time = new Date(t)
+
+    this.setState({ delivery_end_time: t})
   }
 
 
@@ -149,23 +147,20 @@ class Driver_Page extends Component {
 
 
   result_section = () => {
-    if(this.state.order_info) {
-      const { userName, userAddr, service, isUrgent, boxSize, 
-        delivery_time, delivery_start_location, delivery_end_location,
-        recipient_name, recipient_contact, contract_addr } = this.state.order_info
+    if(this.state.driver_info) {
+      const { userName, userAddr, service, contract_addr, delivery_start_time, delivery_end_time, regular_place,
+        license_plate, sex, phone_number} = this.state.driver_info
       return (
         <div className="result_section">
-          <div>寄送者名稱：{userName}</div>
-          <div>寄送者帳戶地址：{userAddr}</div>
-          <div>合約地址：{contract_addr}</div>
+          <div>司機名稱：{userName}</div>
+          <div>司機性別：{sex}</div>
+          <div>司機帳戶地址：{userAddr}</div>
+          <div>司機合約地址：{contract_addr}</div>
+          <div>司機車牌號碼：{license_plate}</div>
+          <div>司機連絡電話：{phone_number}</div>
           <div>選擇服務：{service}</div>
-          <div>是否為急件：{isUrgent}</div>
-          <div>箱子大小：{boxSize}</div>
-          <div>運送時間：{delivery_time}</div>
-          <div>運送起點：{delivery_start_location}</div>
-          <div>運送終點：{delivery_end_location}</div>
-          <div>收件者姓名：{recipient_name}</div>
-          <div>收件者聯絡方式：{recipient_contact}</div>
+          <div>服務時間：{delivery_start_time} ~ {delivery_end_time}</div>
+          <div>常去地點：{regular_place}</div>
         </div>
       )
     } else return null
@@ -190,7 +185,7 @@ class Driver_Page extends Component {
           <div className="block1">
             <Form>
               <Form.Group>
-                <Form.Label>選擇服務</Form.Label>
+                <Form.Label>所提供服務</Form.Label>
                 <Row>
                   <Col>
                     <Form.Check type="radio" label="機車" name="radios1" id="rd1" onChange={() => this.setState({ service: 0})}/>
@@ -201,60 +196,28 @@ class Driver_Page extends Component {
                 </Row>
               </Form.Group>
 
-              <Form.Group>
-                <Form.Label>是否為急件</Form.Label>
-                <Row>
-                  <Col>
-                    <Form.Check type="radio" label="是" name="radios2" id="rd3" onChange={() => this.setState({ isUrgent: true})}/>
-                  </Col>
-                  <Col>
-                    <Form.Check type="radio" label="否" name="radios2" id="rd4" onChange={() => this.setState({ isUrgent: false})}/>
-                  </Col>
-                </Row>
-              </Form.Group>
 
               <Form.Group>
-                <Form.Label>貨品大小</Form.Label>
+                <Form.Label>提供服務之時間</Form.Label>
                 <Row>
                   <Col>
-                    <Form.Check type="radio" label="小(100)" name="radios3" id="rd5" onChange={() => this.setState({ boxSize: 100})}/>
+                    <Form.Control type="time" onChange={(e) => this.convert_start_time(e.target.value)}/>
                   </Col>
+                  {"到"}
                   <Col>
-                    <Form.Check type="radio" label="中(500)" name="radios3" id="rd6" onChange={() => this.setState({ boxSize: 500})}/>
-                  </Col>
-                  <Col>
-                    <Form.Check type="radio" label="大(1000)" name="radios3" id="rd7" onChange={() => this.setState({ boxSize: 1000})}/>
+                    <Form.Control type="time" onChange={(e) => this.convert_end_time(e.target.value)}/>
                   </Col>
                 </Row>
-              </Form.Group>
-
-              <Form.Group>
-                <Form.Label>寄件日期時間</Form.Label>
-                <Form.Control type="datetime-local" onChange={(e) => this.convert_date(e.target.value)}/>
               </Form.Group>
               
               <Form.Group>
-                <Form.Label>貨物起點</Form.Label>
-                <Form.Control type="input" placeholder="起點地址" onChange={(e) => this.setState({ delivery_start_location: e.target.value})}/>
+                <Form.Label>常去地點</Form.Label>
+                <Form.Control type="input" placeholder="輸入活動區域" onChange={(e) => this.setState({ regular_place: e.target.value})}/>
               </Form.Group>
 
-              <Form.Group>
-                <Form.Label>貨物終點</Form.Label>
-                <Form.Control type="input" placeholder="迄點地址" onChange={(e) => this.setState({ delivery_end_location: e.target.value})}/>
-              </Form.Group>
-
-              <Form.Group>
-                <Form.Label>收件人</Form.Label>
-                <Form.Control type="input" placeholder="收件人姓名" onChange={(e) => this.setState({ recipient_name: e.target.value})}/>
-              </Form.Group>
-
-              <Form.Group>
-                <Form.Label>收件人聯絡方式</Form.Label>
-                <Form.Control type="input" placeholder="手機 or 電話" onChange={(e) => this.setState({ recipient_contact: e.target.value})}/>
-              </Form.Group>
 
               <Button variant="primary" onClick={this.place_order}>
-                送出訂單
+                送出司機資料
               </Button>
             </Form>
             {

@@ -1,11 +1,8 @@
 import React, { Component } from "react";
-import Sender from "./contracts/Sender.json";
 import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link,
-  Redirect
 } from "react-router-dom";
 import "firebase/database";
 import "./App.css";

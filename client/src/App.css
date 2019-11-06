@@ -39,6 +39,26 @@
   height: 500px;
 }
 
+.block3 {
+  border: 1px solid;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  height: 100%;
+}
+
+.block4 {
+  border: 1px solid;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  height: 100%;
+}
+
 .top .btn {
   margin-right: 20px;
 }

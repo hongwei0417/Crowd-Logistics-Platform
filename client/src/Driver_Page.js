@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Button, Form, Row, Col } from 'react-bootstrap'
-import Driver from "./contracts/Driver.json";
+import Driver_Request from "./contracts/Driver_Request.json";
 import getWeb3 from "./utils/getWeb3";
 import firebase from "firebase/app"
 import {
@@ -25,8 +25,8 @@ class Driver_Page extends Component {
       console.log(accounts)
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = Driver.networks[networkId];
-      const instance = new web3.eth.Contract(Driver.abi, deployedNetwork && deployedNetwork.address);
+      const deployedNetwork = Driver_Request.networks[networkId];
+      const instance = new web3.eth.Contract(Driver_Request.abi, deployedNetwork && deployedNetwork.address);
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
@@ -55,7 +55,7 @@ class Driver_Page extends Component {
 
 
     const driver_info = [service, delivery_start_time, delivery_end_time, regular_place]
-    const contract_options = { data: Driver.bytecode, arguments: driver_info }
+    const contract_options = { data: Driver_Request.bytecode, arguments: driver_info }
     const send_options = { from: accounts[1], gas: 4712388, gasPrice: 100000000000 }
 
     let receipt;

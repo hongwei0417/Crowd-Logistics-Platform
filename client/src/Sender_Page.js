@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Button, Form, Row, Col } from 'react-bootstrap'
-import Sender from "./contracts/Sender.json";
+import Sender_Request from "./contracts/Sender_Request";
 import getWeb3 from "./utils/getWeb3";
 import firebase from "firebase/app"
 import {
@@ -24,8 +24,8 @@ class Sender_Page extends Component {
       console.log(accounts)
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = Sender.networks[networkId];
-      const instance = new web3.eth.Contract(Sender.abi, deployedNetwork && deployedNetwork.address);
+      const deployedNetwork = Sender_Request.networks[networkId];
+      const instance = new web3.eth.Contract(Sender_Request.abi, deployedNetwork && deployedNetwork.address);
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
@@ -57,7 +57,7 @@ class Sender_Page extends Component {
 
 
     const order_info = [delivery_time, delivery_start_location, delivery_end_location, recipient_name, recipient_contact, service, isUrgent, boxSize]
-    const contract_options = { data: Sender.bytecode, arguments: order_info }
+    const contract_options = { data: Sender_Request.bytecode, arguments: order_info }
     const send_options = { from: accounts[0], gas: 4712388, gasPrice: 100000000000 }
 
     let receipt;

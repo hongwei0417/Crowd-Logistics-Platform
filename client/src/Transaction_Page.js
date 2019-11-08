@@ -76,10 +76,10 @@ class Transaction_Page extends Component {
 
   }
 
-  test2 = async () => {
+  driver_receive = async (n) => {
     const { accounts, contract } = this.state
 
-    await contract.methods.push_driver(accounts[2]).send({from: accounts[0]});
+    await contract.methods.push_driver(accounts[n]).send({from: accounts[0]});
 
     const driver = await contract.methods.get_driver().call();
 

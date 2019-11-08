@@ -59,6 +59,16 @@
   height: 100%;
 }
 
+.block5 {
+  border: 1px solid;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 20%;
+  height: 300px;
+}
+
 .top .btn {
   margin-right: 20px;
 }

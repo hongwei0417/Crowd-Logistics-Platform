@@ -2,7 +2,6 @@
 
 import React, { Component } from "react";
 import { Button, Form, Row, Col } from 'react-bootstrap'
-import direction from 'google-maps-direction'
 // import { withScriptjs, withGoogleMap, GoogleMap, DirectionsRenderer } from "react-google-maps";
 import Transaction from "./contracts/Transaction.json";
 import getWeb3 from "./utils/getWeb3";
@@ -15,7 +14,9 @@ class Transaction_Page extends Component {
     web3: null,
     accounts: null,
     contract: null,
-    order_info: null
+    sender_info: [[],[],[],[],[],],
+    driver_info: [[],[],[],[],[],],
+    status: [false,false,false,false,false,false,false,false,false,false,]
   };
 
 
@@ -50,14 +51,28 @@ class Transaction_Page extends Component {
     }
   };
 
-  test = async () => {
-    const { accounts, contract } = this.state
+  place_order = async (n) => {
+    const { accounts, contract, sender_info, status } = this.state
 
-    await contract.methods.push_sender(accounts[1]).send({from: accounts[0]});
+    const _sender_info = sender_info
+    const _status = status
+
+    await contract.methods.push_sender(accounts[n+1]).send({from: accounts[0]});
 
     const sender = await contract.methods.get_sender().call();
 
     console.log(sender)
+
+    _sender_info[n].push("成功送出一筆訂單!")
+    _sender_info[n].push("等待中...")
+    _status[n] = true
+
+    console.log(_sender_info)
+
+    this.setState({
+      sender_info: _sender_info,
+      status: _status
+    })
 
   }
 
@@ -94,17 +109,7 @@ class Transaction_Page extends Component {
   }
 
   test5 = async() => {
-    direction({
-      origin: 'bukit damansara',
-      destination: 'klcc'
-    })
-    .then(function(result){
-      // return result
-      //   routes: [...],
-      //   geocoded_waypoints: [...],
-      //   status: "OK"
-      console.log(result)
-    });
+    
   }
 
 
@@ -114,12 +119,93 @@ class Transaction_Page extends Component {
     }
     return (
       <div className="App">
-        <div className="top">
+        <div className="top" style={{marginBottom: '30px'}}>
             <Button onClick={this.test}>測試1</Button>
             <Button onClick={this.test2}>測試2</Button>
             <Button onClick={this.test3}>測試3</Button>
             <Button onClick={this.test4}>測試4</Button>
             <Button onClick={this.test5}>地圖</Button>
+        </div>
+        <div className="block5">
+            <span>Sender1</span>
+            <Button onClick={() => this.place_order(0)} disabled={this.state.status[0]}>寄送訂單</Button>
+            {
+              this.state.sender_info[0].map((item, index) => (
+                <div key={index}>{item}</div>
+              ))
+            }
+        </div>
+        <div className="block5">
+            <span>Sender1</span>
+            <Button onClick={this.test}>寄送訂單</Button>
+            <div>
+              {this.state.info1}
+            </div>
+        </div>
+        <div className="block5">
+            <span>Sender1</span>
+            <Button onClick={this.test}>寄送訂單</Button>
+            <div>
+              {this.state.info1}
+            </div>
+        </div>
+        <div className="block5">
+            <span>Sender1</span>
+            <Button onClick={this.test}>寄送訂單</Button>
+            <div>
+              {this.state.info1}
+            </div>
+        </div>
+        <div className="block5">
+            <span>Sender1</span>
+            <Button onClick={this.test}>寄送訂單</Button>
+            <div>
+              {this.state.info1}
+            </div>
+        </div>
+        <div className="block5">
+            <span>Sender1</span>
+            
+            <Form.Group>
+              <Row>
+                <Col md={7}>
+                  <Form.Control type="input" placeholder="寄送者編號" onChange={(e) => this.setState({ delivery_start_location: e.target.value})}/>
+                </Col>
+                <Col>
+                  <Button onClick={this.test}>接訂單</Button>
+                </Col>
+              </Row>
+            </Form.Group>
+        
+            
+        </div>
+        <div className="block5">
+            <span>Sender1</span>
+            <Button onClick={this.test}>寄送訂單</Button>
+            <div>
+              {this.state.info1}
+            </div>
+        </div>
+        <div className="block5">
+            <span>Sender1</span>
+            <Button onClick={this.test}>寄送訂單</Button>
+            <div>
+              {this.state.info1}
+            </div>
+        </div>
+        <div className="block5">
+            <span>Sender1</span>
+            <Button onClick={this.test}>寄送訂單</Button>
+            <div>
+              {this.state.info1}
+            </div>
+        </div>
+        <div className="block5">
+            <span>Sender1</span>
+            <Button onClick={this.test}>寄送訂單</Button>
+            <div>
+              {this.state.info1}
+            </div>
         </div>
       </div>
     );

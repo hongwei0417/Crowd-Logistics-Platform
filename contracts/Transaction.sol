@@ -2,8 +2,9 @@ pragma solidity ^0.5.0;
 
 contract Transaction {
 
-    address[] private Sender;
-    address[] private Driver;
+    address[] private Sender; //寄送方
+    
+    mapping(address => address[]) Driver; //一個寄送方對多個和司機
     
     event get_match(address, address); //取得配對合約
     
@@ -11,8 +12,8 @@ contract Transaction {
         return Sender;
     }
     
-    function get_driver() public view returns(address[] memory){
-        return Driver;
+    function get_driver(address sender) public view returns(address[] memory){
+        return Driver[sender];
     }
 
     function push_sender(address sender) public {
@@ -36,31 +37,25 @@ contract Transaction {
         return sender;
     }
 
-    function push_driver(address driver) public {
-        Driver.push(driver);
+    function push_driver(address sender, address driver) public {
+        Driver[sender].push(driver);
     }
 
-    function pop_driver(uint index) public returns(address){
-        require(index < Driver.length);
+    function pop_driver(address sender) public returns(address){
+        require(Driver[sender].length > 0);
         
-        address driver = Driver[index];
+        address driver = Driver[sender][0]; //取得第一位
         
-        delete Driver[index];
-
-        for(uint i = index; i < Driver.length-1; i++) {
-            Driver[i] = Driver[i+1];
-        }
-        
-        Driver.length--;
+        delete Driver[sender];
         
         return driver;
     }
     
     function matching() public {
-        require(Sender.length > 0 && Driver.length > 0, "No Member!");
+        require(Sender.length > 0 && Driver[Sender[0]].length > 0, "No Member!");
         
         address sender = pop_sender(0);
-        address driver = pop_driver(0);
+        address driver = pop_driver(sender);
         
         emit get_match(sender, driver);
         

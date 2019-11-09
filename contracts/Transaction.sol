@@ -51,13 +51,26 @@ contract Transaction {
         return driver;
     }
     
-    function matching() public {
-        require(Sender.length > 0 && Driver[Sender[0]].length > 0, "No Member!");
+    function matching() public { //配對第一位
+
+        require(Sender.length > 0 || Driver[Sender[0]].length > 0);
         
         address sender = pop_sender(0);
         address driver = pop_driver(sender);
         
         emit get_match(sender, driver);
-        
+    }
+
+    function clear() public {
+        delete Sender;
+    }
+
+    function check_matching() public returns (bool) {
+        bool can_match = false;
+
+        if(Driver[Sender[0]].length > 0) {
+            can_match = true;
+        }
+        return can_match;
     }
 }

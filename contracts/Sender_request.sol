@@ -2,7 +2,10 @@ pragma solidity ^0.5.0;
 
 
 contract Sender_Request {
-    mapping(address => Order) User;
+
+    mapping(address => mapping(uint => Order)) User;
+
+    event return_tx_time(uint time);
     
     struct Order {
         uint delivery_time; //寄送時間
@@ -37,13 +40,15 @@ contract Sender_Request {
             isUrgent: isUr,
             boxSize: bs
         });
-        
-        User[msg.sender] = order;
 
+        uint time = now;
         
+        User[msg.sender][time] = order;
+
+        emit return_tx_time(time);
     }
 
-    function get_order_info() public view returns (
+    function get_order_info(uint time) public view returns (
         uint, 
         string memory,
         string memory,
@@ -54,7 +59,7 @@ contract Sender_Request {
         uint
     ) {
 
-        Order memory order = User[msg.sender];
+        Order memory order = User[msg.sender][time];
 
         return (
             order.delivery_time,

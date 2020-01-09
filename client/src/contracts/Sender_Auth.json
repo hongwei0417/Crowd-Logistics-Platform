@@ -5996,12 +5996,12 @@
         }
       },
       "links": {},
-      "address": "0x6ba98fD53B1fAacF436c673DcE2F65DDa62b807A",
-      "transactionHash": "0xa84141faa4d08a7e571661c053d38f2c3fc997adf4763e5eec92dbe3acd886d3"
+      "address": "0x524a2Af22b1FA10d0fEd8a2C98CeD38CbCacF274",
+      "transactionHash": "0xdae40eb9470acc5899836099ab489dbfa4cbb735f4921a2eb781454b77e0da43"
     }
   },
   "schemaVersion": "3.0.16",
-  "updatedAt": "2019-11-09T14:53:23.721Z",
+  "updatedAt": "2019-12-08T06:33:41.154Z",
   "devdoc": {
     "methods": {}
   },

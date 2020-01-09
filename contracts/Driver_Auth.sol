@@ -13,7 +13,7 @@ contract Driver_Auth {
     string psd_hint; //密碼提示
     string driver_license; //駕照號碼
     string license_plate; //車牌號碼
-    bool insurance_valid; //強制責任險有效性
+    // bool insurance_valid; //強制責任險有效性
     bool drunk_driving; //酒醉紀錄
     
 
@@ -39,7 +39,7 @@ contract Driver_Auth {
         require(bytes(name).length != 0, "name is empty!"); //姓名不為空
         require(bytes(phone_number).length != 0, "phone number is empty!"); //電話不可為空
 
-        driver_license = get_driver_license(birthday, cid); //取得司機車牌
+        driver_license = get_driver_license(birthday, cid); //取得司機駕照
         license_plate = get_license_plate(birthday, cid); //取得司機車牌
 
         bool email_result = verify_email(email); //驗證信箱規則

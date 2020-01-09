@@ -78,21 +78,25 @@ class Register_Page extends Component {
     })
   }
 
-  test3 = async () => {
+  generate_account = async () => {
     const { web3 } = this.state
-    const result1 = await web3.eth.accounts.create();
-    console.log(result1)
-    // const result2 = await web3.eth.personal.newAccount('1234')
-    // console.log(result2)
-    const result3 = await web3.eth.accounts.wallet.add(result1.privateKey);
-    console.log(result3)
+    const result = await web3.eth.accounts.create();
 
-    const result4 = await web3.eth.accounts.wallet.save("");
-    console.log(result4)
+    const account = await web3.eth.accounts.wallet.add(result.privateKey);
 
-    const accounts = await web3.eth.getAccounts();
-    console.log(accounts)
+    const is_save = await web3.eth.accounts.wallet.save("");
 
+    if(is_save) {
+      const accounts = await web3.eth.getAccounts();
+
+      this.setState({ accounts });
+
+      return account;
+
+    } else {
+      alert("Error!")
+      return null;
+    }
   }
 
 
@@ -105,7 +109,7 @@ class Register_Page extends Component {
         <div className="top">
             <Button onClick={this.test}>測試1</Button>
             <Button onClick={this.test2}>測試2</Button>
-            <Button onClick={this.test3}>測試3</Button>
+            <Button onClick={this.generate_account}>測試3</Button>
         </div>
         <div className="block3">
           <div>寄送者帳號申請</div>

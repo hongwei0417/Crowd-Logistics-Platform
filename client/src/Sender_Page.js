@@ -56,25 +56,32 @@ class Sender_Page extends Component {
     // const newContract = web3.eth.Contract(Sender.abi, address, options)
 
 
-    const order_info = [delivery_time, delivery_start_location, delivery_end_location, recipient_name, recipient_contact, service, isUrgent, boxSize]
-    const contract_options = { data: Sender_Request.bytecode, arguments: order_info }
-    const send_options = { from: accounts[0], gas: 4712388, gasPrice: 100000000000 }
-
     let receipt;
-    contract.options.from = accounts[0]
-    const newContract = await contract.deploy(contract_options)
-      .send(send_options, this.handle_error_and_tx)
-      .on('receipt', (rcp) => {
-        receipt = rcp
-        console.log(receipt)
-      })
+    const order_info = [delivery_time, delivery_start_location, delivery_end_location, recipient_name, recipient_contact, service, isUrgent, boxSize]
+    const send_options = { from: accounts[1], gas: 4712388, gasPrice: 100000000000 }
+
+    contract.events.return_tx_time().once('data', (e) => {
+      console.log(e.returnValues)
+    })
+    receipt = await contract.methods.set_order_info(...order_info).send(send_options)
+
+
+    // const contract_options = { data: Sender_Request.bytecode, arguments: order_info }
+    // let receipt;
+    // contract.options.from = accounts[0]
+    // const newContract = await contract.deploy(contract_options)
+    //   .send(send_options, this.handle_error_and_tx)
+    //   .on('receipt', (rcp) => {
+    //     receipt = rcp
+    //     console.log(receipt)
+    //   })
     
     const data = {};
     data[receipt.transactionHash] = receipt.contractAddress
     await firebase.database().ref("Sender/001/order_addresses").update(data)
 
-    this.setState({ contract_addr: receipt.contractAddress })
-    console.log(newContract)
+    this.setState({ contract_addr: receipt.contractAddress, tx: receipt.transactionHash })
+    console.log(receipt)
 
   };
 
@@ -89,15 +96,15 @@ class Sender_Page extends Component {
 
   get_order = async () => {
 
-    const { accounts, contract, address } = this.state;
+    const { accounts, contract, time, tx } = this.state;
 
-    if(address == null) return;
+    // if(address == null) return;
 
 
     let data;
     try {
-      contract.options.address = address //設定呼叫合約地址
-      data = await contract.methods.get_order_info().call({from: accounts[0]})
+      // contract.options.address = address //設定呼叫合約地址
+      data = await contract.methods.get_order_info(time).call({from: accounts[1]})
     } catch(e) {
       console.log(e)
       alert("查無此合約地址")
@@ -116,7 +123,7 @@ class Sender_Page extends Component {
     console.log(data[0])
     const order_info = {
       userName: name,
-      contract_addr: address,
+      tx: tx,
       userAddr: accounts[0],
       sex: sex == 1 ? "男性" : "女性",
       phone_number: phone_number,
@@ -142,7 +149,7 @@ class Sender_Page extends Component {
 
 
   test = async () => {
-    // await firebase.database().ref('Sender/001/order_addresses').set({4: "4"})
+    
   }
 
 
@@ -150,14 +157,14 @@ class Sender_Page extends Component {
     if(this.state.order_info) {
       const { userName, userAddr, service, isUrgent, boxSize, 
         delivery_time, delivery_start_location, delivery_end_location,
-        recipient_name, recipient_contact, contract_addr, phone_number, sex} = this.state.order_info
+        recipient_name, recipient_contact, tx, phone_number, sex} = this.state.order_info
       return (
         <div className="result_section">
           <div>寄送者名稱：{userName}</div>
           <div>寄送者性別：{sex}</div>
           <div>寄送者帳戶地址：{userAddr}</div>
           <div>寄送者連絡電話：{phone_number}</div>
-          <div>客戶合約地址：{contract_addr}</div>
+          <div>交易Hash：{tx}</div>
           <div>選擇服務：{service}</div>
           <div>是否為急件：{isUrgent}</div>
           <div>箱子大小：{boxSize}</div>
@@ -269,7 +276,7 @@ class Sender_Page extends Component {
           <div className="block2">
             <Row>
               <Col md={9}>
-                <Form.Control type="search" placeholder="帳戶地址" onChange={(e) => this.setState({ address: e.target.value})}/>
+                <Form.Control type="search" placeholder="交易Hash" onChange={(e) => this.setState({ time: e.target.value})}/>
               </Col>
               <Col>
                 <Button className="search" onClick={this.get_order}>搜尋</Button>

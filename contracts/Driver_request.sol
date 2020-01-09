@@ -12,6 +12,17 @@ contract Driver_Request {
         string regular_place; //活動區域
     }
 
+    // struct Available_time {
+    //     string delivery_start_time; //送貨開始時間
+    //     string delivery_end_time; //送貨結束時間
+    // }
+
+    // struct Driver_info {
+    //     uint service; //選擇服務
+    //     Available_time ats; //司機可寄送時間
+    //     string regular_place; //活動區域
+    // }
+
 
     function set_driver_info(uint sv, string memory dst, string memory det, string memory rp) public {
 

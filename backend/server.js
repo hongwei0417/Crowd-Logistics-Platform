@@ -1,0 +1,49 @@
+import express from 'express'
+import cors from 'cors'
+import mongoose from 'mongoose'
+import { config } from 'dotenv'
+import usersRouter from './routes/users'
+import driverRouter from './routes/drivers'
+import getWeb3 from './getWeb3'
+
+config();
+
+const app = express();
+const port = process.env.PORT || 5000;
+
+app.use(cors());
+app.use(express.json());
+
+const uri = process.env.ATLAS_URI;
+mongoose.connect(uri, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true }
+);
+
+const connection = mongoose.connection;
+connection.once('open', () => {
+  console.log("MongoDB database connection established successfully");
+  console.log("The database is " + connection.name)
+})
+
+
+const start_web3 = async () => {
+  try {
+    const web3 = await getWeb3();
+    const accounts = await web3.eth.getAccounts();
+    console.log(accounts)
+    console.log("Web3 is connecting!")
+  } catch(e) {
+    console.log(e)
+  }
+  
+}
+
+start_web3();
+
+
+app.use('/users', usersRouter);
+app.use('/drivers', driverRouter);
+
+
+app.listen(port, () => {
+    console.log(`Server is running on port: ${port}`);
+});

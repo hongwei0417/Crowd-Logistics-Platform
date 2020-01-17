@@ -8,7 +8,7 @@ import {
   Link
 } from "react-router-dom";
 import "firebase/database";
-import "./App.css";
+// import "./App.css";
 
 
 class Register_Page extends Component {

@@ -7,7 +7,7 @@ import Transaction from "./contracts/Transaction.json";
 import getWeb3 from "./utils/getWeb3";
 import firebase from "firebase/app"
 import "firebase/database";
-import "./App.css";
+// import "./App.css";
 import { clearInterval } from "timers";
 
 class Transaction_Page extends Component {

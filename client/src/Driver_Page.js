@@ -7,7 +7,7 @@ import {
   Link
 } from "react-router-dom";
 import "firebase/database";
-import "./App.css";
+// import "./App.css";
 
 
 class Driver_Page extends Component {

@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import User from '../models/user_model'
+import { newAccount, t } from '../modules/eth'
 
 const router = Router()
-
 
 const get_all_user = async (req, res) => {
   const users = await User.find()
@@ -55,7 +55,7 @@ const update_user = async (req, res) => {
 
 }
 
-const verify_login = async (req, res) => {
+const login = async (req, res) => {
   const { email, password } = req.body
   const query = User.findOne({email: email})
   query.exec((error, user) => {
@@ -68,9 +68,9 @@ const verify_login = async (req, res) => {
 
     if(user) {
       if(user.psd == password) {
-        res.json(true)
+        res.json({status: true, user})
       } else {
-        res.json(false)
+        res.json({status: false, msg: 'Login failed'})
       }
     } else {
       res.json({status: false, msg: 'No user'})
@@ -115,11 +115,16 @@ const register = async (req, res) => {
     if(users.length) {
       res.json({status: false, msg: 'User exists'})
     } else {
+      const account = await newAccount(); //新建以太坊帳戶
       const newUser = new User({
         username,
         phone_number,
         email,
         psd: password,
+        account: {
+          address: account.address,
+          privateKey: account.privateKey
+        }
       });
 
       await newUser.save()
@@ -130,12 +135,23 @@ const register = async (req, res) => {
 }
 
 
+
+
+const test = async (req, res) => {
+  console.log(req.body)
+  
+  
+  res.json("OK")
+}
+
+
 router.route('/').get(get_all_user);
 router.route('/add').post(add_user);
 router.route('/update/:id').post(update_user);
-router.route('/login').post(verify_login);
+router.route('/login').post(login);
 router.route('/check_email').post(check_email);
 router.route('/register').post(register);
+router.route('/test').post(test);
 
 
 export default router;

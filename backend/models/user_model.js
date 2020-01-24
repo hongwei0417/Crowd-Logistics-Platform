@@ -10,13 +10,50 @@ const userSchema = new Schema({
     trim: true,
     minlength: 3
   },
-  sex: { type: Number },
-  birthday: { type: Date },
-  phone_number: { type: String, required: true, trim: true },
-  email: { type: String, required: true },
-  cid: { type: String, trim: true },
-  psd: { type: String, required: true, trim: true },
-  psd_hint: { type: String }
+  sex: { 
+    type: Number,
+    default: null
+  },
+  birthday: { 
+    type: Date,
+    default: null
+  },
+  phone_number: { 
+    type: String, 
+    required: true, 
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true
+  },
+  cid: {
+    type: String,
+    trim: true,
+    default: null
+  },
+  psd: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  psd_hint: {
+    type: String,
+    default: null
+  },
+  account: {
+    address: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    privateKey: {
+      type: String,
+      required: true,
+      trim: true
+    }
+  },
+  
 }, {
   timestamps: true,
 });

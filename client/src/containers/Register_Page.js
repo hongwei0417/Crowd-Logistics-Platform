@@ -3,6 +3,8 @@ import { Form, Button, Col, InputGroup, FormControl  } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import axios from 'axios'; 
 import styles from '../css/Register_Page.module.css'
+import { connect } from 'react-redux'
+
 
 
 class Register_Page extends Component {
@@ -74,7 +76,6 @@ class Register_Page extends Component {
       username: username,
       phone_number: phone,
     }
-
     
     const res = await axios.post('http://localhost:5000/users/register', data)
     
@@ -94,7 +95,7 @@ class Register_Page extends Component {
           <div className={styles.topic}>Register</div>
           <Form className={styles.form} onSubmit={(e) => this.onSubmit(e)}>
             <Form.Group className={styles['form-group']}>
-              <Form.Label>User name</Form.Label>
+              <Form.Label>Nickname</Form.Label>
               <Form.Control type="text" placeholder="Your name" onChange={this.set_username}/>
             </Form.Group>
             <Form.Group className={styles['form-group']}>
@@ -102,7 +103,7 @@ class Register_Page extends Component {
               <Form.Control type="text" placeholder="Phone number" onChange={this.set_phone}/>
             </Form.Group>
             <div className={styles.line}></div>
-            <Form.Group className={styles['form-group']}>
+            <Form.Group className={styles.verify_group}>
               <Form.Label>Email address</Form.Label>
               <Form.Row>
                 <InputGroup className="mb-3">
@@ -138,5 +139,11 @@ class Register_Page extends Component {
   }
 }
 
+const mapStateToProps = state => {
+  return {
 
-export default Register_Page;
+  }
+}
+
+
+export default connect(mapStateToProps)(Register_Page);

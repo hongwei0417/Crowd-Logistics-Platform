@@ -1,18 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+
+//redux
 import { createStore, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
 import { createLogger } from 'redux-logger'
-import reducer from './reducers'
-import './css/index.css';
+import rootReducer from './reducers'
+
+//redux-persist
+import { persistStore, persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage";
+import { PersistGate } from "redux-persist/lib/integration/react";
+
+//components
 import App from './containers/App';
-import * as firebase from "firebase/app";
-import firebaseConfig from "./firebase"
+
+//css
+import './css/index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-
-firebase.initializeApp(firebaseConfig);
 
 const middleware = [ thunk ]
 if (process.env.NODE_ENV !== 'production') {
@@ -20,13 +27,30 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const store = createStore(
-  reducer,
+  persistReducer(
+    {
+      key: "root",
+      debug: true,
+      storage,
+      whitelist: ["userState"],
+    },
+    rootReducer
+  ),
+  undefined,
   applyMiddleware(...middleware)
-)
+);
+
+const persistor = persistStore(store, null, () => {
+  // if you want to get restoredState
+  console.log("restoredState", store.getState());
+});
+
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <PersistGate persistor={persistor}>
+      <App />
+    </PersistGate>
   </Provider>,
   document.getElementById('root')
 );

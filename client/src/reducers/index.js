@@ -1,6 +1,8 @@
-const test = (state = 'test', action) => {
-  return state
-}
+import { combineReducers } from 'redux'
+import userState from './userState'
 
 
-export default test;
+
+export default combineReducers({
+  userState
+});

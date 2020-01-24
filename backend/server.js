@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import { config } from 'dotenv'
 import usersRouter from './routes/users'
 import driverRouter from './routes/drivers'
+import transactionRouter from './routes/transactions'
 import getWeb3 from './getWeb3'
 
 config();
@@ -27,10 +28,11 @@ connection.once('open', () => {
 
 const start_web3 = async () => {
   try {
-    const web3 = await getWeb3();
+    global.web3 = await getWeb3();
     const accounts = await web3.eth.getAccounts();
     console.log(accounts)
     console.log("Web3 is connecting!")
+    return web3;
   } catch(e) {
     console.log(e)
   }
@@ -42,6 +44,7 @@ start_web3();
 
 app.use('/users', usersRouter);
 app.use('/drivers', driverRouter);
+app.use('/transactions', transactionRouter);
 
 
 app.listen(port, () => {

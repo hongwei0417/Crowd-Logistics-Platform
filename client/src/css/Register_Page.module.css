@@ -1,6 +1,6 @@
 .topic {
-  margin-bottom: 10%;
-  font-size: 200%;
+  margin-bottom: 5%;
+  font-size: 30px;
 }
 
 .flexbox {
@@ -14,14 +14,13 @@
 
 .loginBox {
   border: 1px solid black;
-  width: 30%;
-  height: 75%;
+  width: 300px;
+  height: 90vh;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
 }
-
 
 .form, .form-group {
   display: flex;
@@ -32,14 +31,24 @@
   margin-bottom: 5%;
 }
 
+.verify_group {
+  margin-bottom: 0 !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 90%;
+}
+
+
 .submit {
-  margin-top: 10%;
+  margin-top: 5%;
 }
 
 .line {
   border: 1px solid rgb(153, 153, 153);
   width: 90%;
-  margin-top: 10%;
-  margin-bottom: 10%;
+  margin-top: 5%;
+  margin-bottom: 5%;
 }
 

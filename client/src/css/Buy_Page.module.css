@@ -1,0 +1,20 @@
+.flexbox {
+  display: flex;
+  /* border: 1px solid black; */
+  width: 100%;
+  height: 80vh;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  width: 400px;
+  height: auto;
+}
+
+.cardImg {
+  width: auto;
+  height: 200px;
+}
+
+

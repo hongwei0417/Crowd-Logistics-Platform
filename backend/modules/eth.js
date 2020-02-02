@@ -9,6 +9,39 @@ export const newAccount = async () => {
   return newAccount
 }
 
+export const getBalance = async (addr) => {
+
+  const balance = await web3.eth.getBalance(addr)
+
+  return balance
+}
+
+export const sendEther = async (addr, ether) => {
+
+  const accounts = await web3.eth.getAccounts()
+
+  const receipt = await web3.eth.sendTransaction({
+    from: accounts[0],
+    to: addr,
+    value: ether
+  })
+
+  return receipt
+}
+
+export const pushOrder = async (addr, order) => {
+
+  const accounts = await web3.eth.getAccounts()
+  const contract = new web3.eth.Contract(Transaction.abi);
+
+  
+  const receipt = await web3.eth.sendTransaction({
+    from: accounts[0],
+    to: addr,
+    value: ether
+  })
+}
+
 
 export const t = async () => {
 

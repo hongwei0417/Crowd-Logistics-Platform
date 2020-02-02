@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import User from '../models/user_model'
-import { newAccount, t } from '../modules/eth'
+import { newAccount, getBalance } from '../modules/eth'
 
 const router = Router()
 
@@ -134,12 +134,17 @@ const register = async (req, res) => {
   })
 }
 
+const getUserBalance = async (req, res) => {
+  const balance = await getBalance(req.body.address)
+
+  res.json(balance)
+}
+
 
 
 
 const test = async (req, res) => {
   console.log(req.body)
-  
   
   res.json("OK")
 }
@@ -151,6 +156,7 @@ router.route('/update/:id').post(update_user);
 router.route('/login').post(login);
 router.route('/check_email').post(check_email);
 router.route('/register').post(register);
+router.route('/getBalance').post(getUserBalance);
 router.route('/test').post(test);
 
 

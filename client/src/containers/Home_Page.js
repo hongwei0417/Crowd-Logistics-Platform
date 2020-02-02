@@ -13,17 +13,6 @@ class Home_Page extends Component {
     transactions: []
   }
 
-
-  // constructor(props) {
-  //   super(props)
-  //   console.log(props.user)
-
-  //   if(!props.user) {
-  //     props.history.replace({pathname: '/'})
-  //   }
-    
-  // }
-
   componentDidMount = async () => {
 
     const { user } = this.props
@@ -40,7 +29,7 @@ class Home_Page extends Component {
   
   
   render() {
-    const { user } = this.props
+    const { user, history } = this.props
     if(user) {
       return (
         <div>
@@ -66,7 +55,7 @@ class Home_Page extends Component {
           }
         </div>
       );
-    } else { this.props.history.replace({pathname: '/'}) }
+    } else { history.replace({pathname: '/'}) }
   }
 }
 const mapStateToProps = state => {

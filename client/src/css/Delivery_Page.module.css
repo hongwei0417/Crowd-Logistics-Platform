@@ -1,0 +1,9 @@
+.flexbox {
+  display: flex;
+  justify-content: center
+}
+
+._flexbox {
+  display: flex;
+  width: 70%
+}

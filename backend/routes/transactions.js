@@ -1,5 +1,6 @@
 import { Router } from 'express' 
 import Transaction from '../models/transaction_model'
+import { sendEther } from '../modules/eth'
 
 const router = Router()
 
@@ -51,8 +52,16 @@ const getTransactions = async (req, res) => {
     })
 }
 
+const sendEtherToUser = async (req, res) => {
+  const { address, ether } = req.body
+  const receipt = await sendEther(address, ether)
+
+  res.json(receipt)
+}
+
 router.route('/init/:uid').post(initTransaction)
 router.route('/add/:uid').post(addTransactions)
 router.route('/get/:uid').post(getTransactions)
+router.route('/sendEther').post(sendEtherToUser)
 
 export default router

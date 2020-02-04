@@ -24,10 +24,10 @@ export class Delivery_Page extends Component {
       service: 0,
       isUrgent: false,
     },
-    showModal: true,
+    showModal: false,
     drivers: [],
     second: 10,
-    n: 1,
+    number: 0,
   }
 
   constructor(props) {
@@ -43,7 +43,7 @@ export class Delivery_Page extends Component {
     const accounts = await web3.eth.getAccounts();
     const contract = new web3.eth.Contract(Transaction.abi, transaction_addr);
 
-    this.search_driver()
+    // this.search_driver()
 
     this.setState({ web3, contract, accounts })
     this.updateEther()
@@ -58,33 +58,35 @@ export class Delivery_Page extends Component {
     })
   }
   
-  placeOrder = async () => {
-    const { orderInfo, web3, contract, accounts } = this.state
-    const { user, newTXN } = this.props
-    const options = { from: accounts[0], gas: 6721975, gasPrice: 20000000000 }
+  placeOrder = async (e) => {
+    // e.preventDefault()
+    this.search_driver()
+    // const { orderInfo, web3, contract, accounts } = this.state
+    // const { user, newTXN } = this.props
+    // const options = { from: accounts[0], gas: 6721975, gasPrice: 20000000000 }
 
-     //監聽訂單結束
-    contract.once('order_time', (error, event) => {
-      this.search_driver(event.returnValues)
-      this.setState({showModal: true})
-      console.log(event.returnValues)
-    })
+    //  //監聽訂單結束
+    // contract.once('order_time', (error, event) => {
+    //   this.search_driver(event.returnValues)
+    //   this.setState({showModal: true})
+    //   console.log(event.returnValues)
+    // })
 
-    //寫入訂單到鏈上
-    const receipt = await contract.methods.start_transaction(
-      user.account.address,
-      orderInfo.dTime,
-      orderInfo.dlStart,
-      orderInfo.dlEnd,
-      orderInfo.rName,
-      orderInfo.rContact,
-      orderInfo.service,
-      orderInfo.isUrgent,
-      parseInt(orderInfo.boxSize)
-    ).send(options)
+    // //寫入訂單到鏈上
+    // const receipt = await contract.methods.start_transaction(
+    //   user.account.address,
+    //   orderInfo.dTime,
+    //   orderInfo.dlStart,
+    //   orderInfo.dlEnd,
+    //   orderInfo.rName,
+    //   orderInfo.rContact,
+    //   orderInfo.service,
+    //   orderInfo.isUrgent,
+    //   parseInt(orderInfo.boxSize)
+    // ).send(options)
 
-    //紀錄到redux
-    newTXN(receipt);
+    // //紀錄到redux
+    // newTXN(receipt);
   }
 
   search_driver = async () => {
@@ -92,24 +94,38 @@ export class Delivery_Page extends Component {
     //搜尋司機
     const res = await axios.post('http://localhost:5000/drivers/getDrivers')
 
+    await this.setState({drivers: res.data, showModal: true})
+
+    this.select_drivers_animation()
+  }
+
+  select_drivers_animation = () => {
+    //動畫
     const interval = setInterval(() => {
-      const { n } = this.state
-      if(n < 0) {
-        this.setState({second: second - 1})
+      const { second, number, drivers } = this.state
+      let n;
+      if(drivers.length > 1) {
+        while(n == number || n == undefined) {
+          n = Math.floor(Math.random()*drivers.length);
+        }
       } else {
-        this.setState({second: 10})
+        n = 1;
+      }
+
+      if(second > 0 || drivers.length == 0) {
+        this.setState({number: n})
+      } else {
+        console.log(number)
         clearInterval(interval);
       }
-    }, 1000);
-
-    this.setState({drivers: res.data})
+    }, 400);
   }
 
   reciprocal = () => {
     const interval = setInterval(() => {
       const { second } = this.state
       if(second > 0) {
-        this.setState({second: second - 1})
+        this.setState({second: second-1})
       } else {
         this.setState({second: 10})
         clearInterval(interval);
@@ -275,9 +291,9 @@ export class Delivery_Page extends Component {
                             </Col>
                           </Form.Row>
                           <Button
-                            // type="submit"
+                            type="submit"
                             variant="primary"
-                            onClick={this.placeOrder}>
+                            onClick={(e) => this.placeOrder(e)}>
                             送出訂單
                           </Button>
                         </Form>
@@ -301,7 +317,7 @@ export class Delivery_Page extends Component {
                   {
                     this.state.drivers.map((driver, i) => {
                       return (
-                        <ListGroup.Item action key={i} variant={this.state.n == i ? "success" : ""}>{driver.uid.username}</ListGroup.Item>
+                        <ListGroup.Item action key={i} variant={this.state.number == i ? "success" : ""}>{driver.uid.username}</ListGroup.Item>
                       )
                     })
                   }

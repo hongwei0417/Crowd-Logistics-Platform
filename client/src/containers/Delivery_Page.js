@@ -59,34 +59,33 @@ export class Delivery_Page extends Component {
   }
   
   placeOrder = async (e) => {
-    // e.preventDefault()
-    this.search_driver()
-    // const { orderInfo, web3, contract, accounts } = this.state
-    // const { user, newTXN } = this.props
-    // const options = { from: accounts[0], gas: 6721975, gasPrice: 20000000000 }
+    e.preventDefault()
+    
+    const { orderInfo, web3, contract, accounts } = this.state
+    const { user, newTXN } = this.props
+    const options = { from: accounts[0], gas: 6721975, gasPrice: 20000000000 }
 
-    //  //監聽訂單結束
-    // contract.once('order_time', (error, event) => {
-    //   this.search_driver(event.returnValues)
-    //   this.setState({showModal: true})
-    //   console.log(event.returnValues)
-    // })
+     //監聽訂單結束
+    contract.once('order_time', (error, event) => {
+      this.search_driver(event.returnValues)
+      console.log(event.returnValues)
+    })
 
-    // //寫入訂單到鏈上
-    // const receipt = await contract.methods.start_transaction(
-    //   user.account.address,
-    //   orderInfo.dTime,
-    //   orderInfo.dlStart,
-    //   orderInfo.dlEnd,
-    //   orderInfo.rName,
-    //   orderInfo.rContact,
-    //   orderInfo.service,
-    //   orderInfo.isUrgent,
-    //   parseInt(orderInfo.boxSize)
-    // ).send(options)
+    //寫入訂單到鏈上
+    const receipt = await contract.methods.start_transaction(
+      user.account.address,
+      orderInfo.dTime,
+      orderInfo.dlStart,
+      orderInfo.dlEnd,
+      orderInfo.rName,
+      orderInfo.rContact,
+      orderInfo.service,
+      orderInfo.isUrgent,
+      parseInt(orderInfo.boxSize)
+    ).send(options)
 
-    // //紀錄到redux
-    // newTXN(receipt);
+    //紀錄到redux
+    newTXN(receipt);
   }
 
   search_driver = async () => {
@@ -173,7 +172,7 @@ export class Delivery_Page extends Component {
                   <Accordion.Collapse eventKey="0" className={styles.flexbox}>
                     <div className={styles._flexbox}>
                       <Card.Body className={styles.fb}>
-                        <Form>
+                        <Form onSubmit={(e) => this.placeOrder(e)}>
                           <Form.Row>
                             <Form.Group as={Col}>
                               <Form.Label>選擇服務</Form.Label>
@@ -293,7 +292,7 @@ export class Delivery_Page extends Component {
                           <Button
                             type="submit"
                             variant="primary"
-                            onClick={(e) => this.placeOrder(e)}>
+                          >
                             送出訂單
                           </Button>
                         </Form>

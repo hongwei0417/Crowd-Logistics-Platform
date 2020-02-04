@@ -32,7 +32,7 @@ const store = createStore(
       key: "root",
       debug: true,
       storage,
-      whitelist: ["userState"],
+      whitelist: ["userState", "txnState"],
     },
     rootReducer
   ),

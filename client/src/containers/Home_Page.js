@@ -46,7 +46,7 @@ class Home_Page extends Component {
               {
                 this.state.transactions.map((tx, i) => {
                   return (
-                    <ListGroup.Item action key={i}>{tx}</ListGroup.Item>
+                    <ListGroup.Item action key={i} >{tx}</ListGroup.Item>
                   )
                 })
               }

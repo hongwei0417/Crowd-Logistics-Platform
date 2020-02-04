@@ -9,6 +9,13 @@ const get_all_driver = async (req, res) => {
   res.json(drivers)
 }
 
+const get_drivers_data = async (req, res) => {
+  const query = Driver.find().populate('uid')
+  query.exec((error, drivers) => {
+    res.json(drivers)
+  })
+}
+
 const add_driver = async (req, res) => {
   const { body } = req
 
@@ -28,6 +35,7 @@ const add_driver = async (req, res) => {
 
 router.route('/').get(get_all_driver);
 router.route('/add').post(add_driver);
+router.route('/getDrivers').post(get_drivers_data);
 
 
 

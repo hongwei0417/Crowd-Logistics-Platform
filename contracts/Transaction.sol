@@ -1,5 +1,5 @@
 pragma solidity ^0.5.0;
-import "Sender.sol";
+import "./Sender.sol";
 
 
 contract Transaction {
@@ -31,7 +31,7 @@ contract Transaction {
     uint _service,
     bool _isUrgent,
     uint _boxSize 
-  ) public returns(uint) {
+  ) public {
       
     uint time = Store.set_order_info(
       sender,
@@ -89,18 +89,18 @@ contract Transaction {
   }
 
   function pop_driver(address sender) public returns(address) {
-    require(Driver[sender].length > 0);
+    require(Drivers[sender].length > 0);
 
-    address driver = Driver[sender][0]; //取得第一位
+    address driver = Drivers[sender][0]; //取得第一位
 
-    delete Driver[sender];
+    delete Drivers[sender];
 
     return driver;
   }
 
   function matching() public { //配對第一位
 
-    require(s.length > 0 || Driver[s[0]].length > 0);
+    require(s.length > 0 || Drivers[s[0]].length > 0);
 
     address sender = pop_sender(0);
     address driver = pop_driver(sender);
@@ -115,7 +115,7 @@ contract Transaction {
   function check_matching() public returns(bool) {
     bool can_match = false;
 
-    if (Driver[s[0]].length > 0) {
+    if (Drivers[s[0]].length > 0) {
       can_match = true;
     }
     return can_match;

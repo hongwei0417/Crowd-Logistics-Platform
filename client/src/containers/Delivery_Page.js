@@ -9,7 +9,7 @@ import Transaction from '../contracts/Transaction.json'
 import { newTXN, clearTXN } from '../actions/txnAction'
 import SearchModal from '../components/modal'
 
-const transaction_addr = '0xf02944a8eF591fFeF7a99b76238782f5096094Bc';
+const transaction_addr = '0xae06db5a2ddB8d2741243362aDdD708F30D55a00';
 
 export class Delivery_Page extends Component {
 
@@ -47,6 +47,8 @@ export class Delivery_Page extends Component {
 
     this.setState({ web3, contract, accounts })
     this.updateEther()
+    contract.once('order_time', (error, event) => this.handleOrderStart(event))
+
   };
 
   updateEther = async () => {
@@ -65,11 +67,8 @@ export class Delivery_Page extends Component {
     const { user, newTXN } = this.props
     const options = { from: accounts[0], gas: 6721975, gasPrice: 20000000000 }
 
-     //監聽訂單結束
-    contract.once('order_time', (error, event) => {
-      this.search_driver(event.returnValues)
-      console.log(event.returnValues)
-    })
+     //監聽訂單進入區塊鏈
+    // contract.once('order_time', (error, event) => this.handleOrderStart(event))
 
     //寫入訂單到鏈上
     const receipt = await contract.methods.start_transaction(
@@ -85,7 +84,31 @@ export class Delivery_Page extends Component {
     ).send(options)
 
     //紀錄到redux
-    newTXN(receipt);
+    await newTXN(receipt);
+
+    this.setState({loading: true})
+  }
+
+  handleOrderStart = (event) => {
+
+    const checkState = setInterval(async () => {
+      console.log(this.state.loading)
+      if(this.state.loading) {
+        clearInterval(checkState)
+        const { user, receipt } = this.props
+
+        console.log(receipt)
+
+        const res = await axios.post('http://localhost:5000/transactions/add', {
+          uid: user._id,
+          txnTime: event.returnValues[1],
+          receipt: receipt
+        })
+        this.search_driver(event.returnValues)
+        console.log(event.returnValues)
+      }
+    }, 500)
+    
   }
 
   search_driver = async () => {
@@ -340,7 +363,8 @@ export class Delivery_Page extends Component {
 
 const mapStateToProps = state => {
   return {
-    user: state.userState.user
+    user: state.userState.user,
+    receipt: state.txnState.receipt
   }
 }
 

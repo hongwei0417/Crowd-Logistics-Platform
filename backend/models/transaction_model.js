@@ -11,8 +11,8 @@ const transactionModel = new Schema({
     ref: 'users'
   },
   transactions: {
-    type: Array,
-    default: null
+    type: Object,
+    default: {}
   }
   
 }, {

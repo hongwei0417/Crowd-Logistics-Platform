@@ -18,11 +18,14 @@ const initTransaction = async (req, res) => {
 }
 
 const addTransactions = async (req, res) => {
-  const { hash } = req.body
+  const { uid, txnTime, receipt } = req.body
+
+  const key = 'transactions.'+ txnTime
   
   const result = await Transaction.updateOne(
-  { "uid": req.params.uid },
-  { "$push": { "transactions": hash }})
+    { uid: uid },
+    { [key]: receipt }
+  )
   
   console.log(result.n)
   console.log(result.nModified)
@@ -60,7 +63,7 @@ const sendEtherToUser = async (req, res) => {
 }
 
 router.route('/init/:uid').post(initTransaction)
-router.route('/add/:uid').post(addTransactions)
+router.route('/add').post(addTransactions)
 router.route('/get/:uid').post(getTransactions)
 router.route('/sendEther').post(sendEtherToUser)
 

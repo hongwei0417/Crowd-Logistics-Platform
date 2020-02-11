@@ -16,15 +16,16 @@ class Home_Page extends Component {
   componentDidMount = async () => {
 
     const { user } = this.props
-    console.log(user)
+    
+    if(user) {
+      const res = await axios.post(`http://localhost:5000/transactions/get/${user._id}`)
 
-    const res = await axios.post(`http://localhost:5000/transactions/get/${user._id}`)
-
-    console.log(res.data)
-  
-    this.setState({
-      transactions: Object.values(res.data)
-    })
+      console.log(res.data)
+    
+      this.setState({
+        transactions: Object.values(res.data)
+      })
+    }
   };
   
   
@@ -55,7 +56,10 @@ class Home_Page extends Component {
           }
         </div>
       );
-    } else { history.replace({pathname: '/'}) }
+    } else {
+      history.replace({pathname: '/'})
+      return null;
+    }
   }
 }
 const mapStateToProps = state => {

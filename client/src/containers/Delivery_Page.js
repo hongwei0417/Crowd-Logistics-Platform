@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import Navbar from '../components/navbar.js'
 import { Button, Card, Form, Row, Col, Accordion, ListGroup, Spinner } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import axios from 'axios'; 
 import styles from '../css/Delivery_Page.module.css'
@@ -40,12 +41,15 @@ export class Delivery_Page extends Component {
 
   componentDidMount = async () => {
 
-    const web3 = await getWeb3();
-    const accounts = await web3.eth.getAccounts();
-    const contract = new web3.eth.Contract(Transaction.abi, transaction_addr);
-
-    this.setState({ web3, contract, accounts })
-    this.updateEther()
+    if(this.props.user) {
+      const web3 = await getWeb3();
+      const accounts = await web3.eth.getAccounts();
+      const contract = new web3.eth.Contract(Transaction.abi, transaction_addr);
+  
+      console.log(web3, accounts, contract)
+      this.setState({ web3, contract, accounts })
+      // this.updateEther()
+    }
   };
 
   updateEther = async () => {
@@ -158,11 +162,7 @@ export class Delivery_Page extends Component {
 
   //通知司機
   noticeDriver = async (driver) => {
-    var socket = io.connect('http://localhost:5000');
-    socket.on('news', function (data) {
-      console.log(data);
-      socket.emit('my other event', { my: 'data' });
-    });
+    
   }
 
 
@@ -185,13 +185,13 @@ export class Delivery_Page extends Component {
   
   render() {
     const { user, history } = this.props
-    if(this.state.web3) {
-      if(user) {
+    if(user) {
+      if(this.state.web3) {
         return (
           <div>
             <Navbar />
             <div>
-              <button onClick={this.noticeDriver}>123</button>
+              <Link to="/home">123</Link>
               <Accordion>
                 <Card className="text-center">
                   <Accordion.Toggle
@@ -372,16 +372,18 @@ export class Delivery_Page extends Component {
             </SearchModal>
           </div>
         )
-      } else { history.replace({pathname: '/'}) }
-    } else {
-      return (
-        <div>
-          <Navbar/>
-          <div>尚未連接區塊鏈</div>
-        </div>
-      )
+      } else {
+        return (
+          <div>
+            <Navbar/>
+            <div>尚未連接區塊鏈</div>
+          </div>
+        )
+      }
+    } else { 
+      history.replace({pathname: '/'})
+      return null;
     }
-   
   }
 }
 

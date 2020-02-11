@@ -63,19 +63,18 @@ const sendEtherToUser = async (req, res) => {
 }
 
 const sendOrderToDriver = async (req, res) => {
-  // const { user, driver, txnTime } = req.body
+  const { user, driver, txnTime } = req.body
 
-  // const data = await Transaction.findOne({ uid: driver }).exec()
+  const data = await Transaction.findOne({ uid: driver }).exec()
 
-  // console.log(data)
+  console.log(data)
 
-  // const result = await Transaction.updateOne(
-  //   { uid: driver },
-  //   { $push: { orders: {uid: user, txnTime} }}
-  // )
+  const result = await Transaction.updateOne(
+    { uid: driver },
+    { $push: { orders: {uid: user, txnTime} }}
+  )
 
-  // res.json(result)
-  io.emit('news', 'hongwei');
+  res.json(result)
 }
 
 router.route('/init/:uid').post(initTransaction)

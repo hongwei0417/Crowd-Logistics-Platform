@@ -18,14 +18,14 @@ class App extends Component {
     if(this.props.user) {
       var socket = io.connect('http://localhost:5000');
       socket.on('connect', () => {
-        socket.emit('load', { user: this.props.user._id });
+        socket.emit('load', { [this.props.user._id]: socket.id });
         console.log(socket.id)
       });
     }
   }
   render() {
     return (
-      <Router forceRefresh={true}>
+      <Router forceRefresh={false}>
         <Switch>
           <Route exact path="/" component={Login_Page} />
           <Route path="/register" component={Register_Page}/>

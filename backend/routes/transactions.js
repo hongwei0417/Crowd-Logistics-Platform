@@ -62,9 +62,26 @@ const sendEtherToUser = async (req, res) => {
   res.json(receipt)
 }
 
+const sendOrderToDriver = async (req, res) => {
+  // const { user, driver, txnTime } = req.body
+
+  // const data = await Transaction.findOne({ uid: driver }).exec()
+
+  // console.log(data)
+
+  // const result = await Transaction.updateOne(
+  //   { uid: driver },
+  //   { $push: { orders: {uid: user, txnTime} }}
+  // )
+
+  // res.json(result)
+  io.emit('news', 'hongwei');
+}
+
 router.route('/init/:uid').post(initTransaction)
 router.route('/add').post(addTransactions)
 router.route('/get/:uid').post(getTransactions)
 router.route('/sendEther').post(sendEtherToUser)
+router.route('/sendOrder').post(sendOrderToDriver)
 
 export default router

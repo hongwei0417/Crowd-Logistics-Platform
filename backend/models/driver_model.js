@@ -8,7 +8,7 @@ const driverSchema = new Schema({
     required: true,
     unique: true,
     trim: true,
-    ref: 'User',
+    ref: 'users',
   },
   driver_license: {
     type: String,
@@ -32,7 +32,7 @@ const driverSchema = new Schema({
   },
   regular_place: {
     type: String
-  }
+  },
 }, {
   timestamps: true,
 });

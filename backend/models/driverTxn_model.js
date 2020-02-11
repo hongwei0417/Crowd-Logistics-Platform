@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
-const transactionModel = new Schema({
+const driverTxnModel = new Schema({
   uid: {
     type: Schema.Types.ObjectId,
     required: true,
@@ -13,19 +13,11 @@ const transactionModel = new Schema({
   transactions: {
     type: Object,
     default: {}
-  },
-  orders: {
-    type: Array,
-    default: []
-  },
-  orderNumber: {
-    type: Number,
-    default: 0,
   }
 }, {
   timestamps: true,
 });
 
-const Transaction = mongoose.model('Transaction', transactionModel, 'transactions');
+const DriverTxn = mongoose.model('DriverTxn', driverTxnModel, 'driverTxns');
 
-export default Transaction;
+export default DriverTxn;

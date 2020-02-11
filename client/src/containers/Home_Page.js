@@ -23,7 +23,7 @@ class Home_Page extends Component {
     console.log(res.data)
   
     this.setState({
-      transactions: res.data
+      transactions: Object.values(res.data)
     })
   };
   
@@ -44,9 +44,9 @@ class Home_Page extends Component {
               <ListGroup.Item action variant="success">Blockchain address： {user.account.address}</ListGroup.Item>
               <ListGroup.Item action variant="info">Private key： {user.account.privateKey}</ListGroup.Item>
               {
-                this.state.transactions.map((tx, i) => {
+                this.state.transactions.map((receipt, i) => {
                   return (
-                    <ListGroup.Item action key={i} >{tx}</ListGroup.Item>
+                    <ListGroup.Item action key={i} >{receipt.transactionHash}</ListGroup.Item>
                   )
                 })
               }

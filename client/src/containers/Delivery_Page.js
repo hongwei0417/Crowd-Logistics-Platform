@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import Navbar from '../components/navbar.js'
-import { Button, Card, Form, Row, Col, Accordion, ListGroup } from 'react-bootstrap'
+import { Button, Card, Form, Row, Col, Accordion, ListGroup, Spinner } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import axios from 'axios'; 
 import styles from '../css/Delivery_Page.module.css'
@@ -8,8 +8,9 @@ import getWeb3 from '../utils/getWeb3'
 import Transaction from '../contracts/Transaction.json'
 import { newTXN, clearTXN } from '../actions/txnAction'
 import SearchModal from '../components/modal'
+import io from 'socket.io-client'
 
-const transaction_addr = '0xae06db5a2ddB8d2741243362aDdD708F30D55a00';
+const transaction_addr = '0xf02944a8eF591fFeF7a99b76238782f5096094Bc';
 
 export class Delivery_Page extends Component {
 
@@ -43,12 +44,8 @@ export class Delivery_Page extends Component {
     const accounts = await web3.eth.getAccounts();
     const contract = new web3.eth.Contract(Transaction.abi, transaction_addr);
 
-    // this.search_driver()
-
     this.setState({ web3, contract, accounts })
     this.updateEther()
-    contract.once('order_time', (error, event) => this.handleOrderStart(event))
-
   };
 
   updateEther = async () => {
@@ -68,7 +65,7 @@ export class Delivery_Page extends Component {
     const options = { from: accounts[0], gas: 6721975, gasPrice: 20000000000 }
 
      //監聽訂單進入區塊鏈
-    // contract.once('order_time', (error, event) => this.handleOrderStart(event))
+    contract.once('order_time', (error, event) => this.handleOrderStart(event))
 
     //寫入訂單到鏈上
     const receipt = await contract.methods.start_transaction(
@@ -111,9 +108,9 @@ export class Delivery_Page extends Component {
     
   }
 
+  //搜尋司機
   search_driver = async () => {
 
-    //搜尋司機
     const res = await axios.post('http://localhost:5000/drivers/getDrivers')
 
     await this.setState({drivers: res.data, showModal: true})
@@ -121,28 +118,32 @@ export class Delivery_Page extends Component {
     this.select_drivers_animation()
   }
 
+  //每隔400ms切換選擇司機
   select_drivers_animation = () => {
-    //動畫
     const interval = setInterval(() => {
       const { second, number, drivers } = this.state
       let n;
-      if(drivers.length > 1) {
-        while(n == number || n == undefined) {
-          n = Math.floor(Math.random()*drivers.length);
-        }
-      } else {
-        n = 1;
+
+      if(drivers.length == 0) {
+        clearInterval(interval);
+        return;
       }
 
-      if(second > 0 || drivers.length == 0) {
+      while(n == number || n == undefined) {
+        n = Math.floor(Math.random()*drivers.length);
+      }
+ 
+      if(second > 0) {
         this.setState({number: n})
       } else {
         console.log(number)
+        this.noticeDriver(drivers[number])
         clearInterval(interval);
       }
     }, 400);
   }
 
+  //倒數10s
   reciprocal = () => {
     const interval = setInterval(() => {
       const { second } = this.state
@@ -153,6 +154,15 @@ export class Delivery_Page extends Component {
         clearInterval(interval);
       }
     }, 1000);
+  }
+
+  //通知司機
+  noticeDriver = async (driver) => {
+    var socket = io.connect('http://localhost:5000');
+    socket.on('news', function (data) {
+      console.log(data);
+      socket.emit('my other event', { my: 'data' });
+    });
   }
 
 
@@ -181,6 +191,7 @@ export class Delivery_Page extends Component {
           <div>
             <Navbar />
             <div>
+              <button onClick={this.noticeDriver}>123</button>
               <Accordion>
                 <Card className="text-center">
                   <Accordion.Toggle
@@ -316,7 +327,20 @@ export class Delivery_Page extends Component {
                             type="submit"
                             variant="primary"
                           >
-                            送出訂單
+                            {
+                              this.state.loading ? (
+                                <Spinner
+                                  as="span"
+                                  animation="grow"
+                                  size="sm"
+                                  role="status"
+                                  aria-hidden="true"
+                                />
+                              ) : null
+                            }
+                            {
+                              this.state.loading ? 'Loading' : '送出訂單'
+                            }
                           </Button>
                         </Form>
                       </Card.Body>

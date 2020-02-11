@@ -81,8 +81,10 @@ contract Transaction {
 
   function sort_drivers(address sender, address[] memory drivers) public {
     
-    //這邊要增加排序的邏輯
-    //.....
+    /*
+    這邊要增加排序的邏輯
+    */
+    
     Drivers[sender] = drivers;
 
     emit notice_drivers(sender);

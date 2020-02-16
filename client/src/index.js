@@ -26,7 +26,7 @@ if (process.env.NODE_ENV !== 'production') {
   middleware.push(createLogger())
 }
 
-const store = createStore(
+export const store = createStore(
   persistReducer(
     {
       key: "root",

@@ -8,6 +8,6 @@
   width: 70%
 }
 
-.btn_bd {
-  border-radius: unset !important;
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
 }

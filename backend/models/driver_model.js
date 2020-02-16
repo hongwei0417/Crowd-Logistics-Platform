@@ -8,7 +8,7 @@ const driverSchema = new Schema({
     required: true,
     unique: true,
     trim: true,
-    ref: 'users',
+    ref: 'User',
   },
   driver_license: {
     type: String,

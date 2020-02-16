@@ -58,6 +58,7 @@ class Login_Page extends Component {
   render() {
     if(this.props.user) {
       this.props.history.replace({pathname: '/home'})
+      return null;
     } else {
       return (
         <div className={styles.flexbox}>

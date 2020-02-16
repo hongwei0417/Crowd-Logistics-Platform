@@ -3,6 +3,7 @@ import cors from 'cors'
 import mongoose from 'mongoose'
 import { config } from 'dotenv'
 import usersRouter from './routes/users'
+import orderRouter from './routes/orders'
 import driverRouter from './routes/drivers'
 import transactionRouter from './routes/transactions'
 import { Server } from 'http'
@@ -37,6 +38,7 @@ start_socket();
 
 
 app.use('/users', usersRouter);
+app.use('/orders', orderRouter);
 app.use('/drivers', driverRouter);
 app.use('/transactions', transactionRouter);
 

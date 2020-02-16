@@ -10,22 +10,21 @@ import Register_Page from './Register_Page'
 import Home_Page from './Home_Page'
 import Buy_Page from './Buy_Page'
 import Delivery_Page from './Delivery_Page'
-import io from 'socket.io-client'
+import Socket from '../modules/sockets'
+
 
 
 class App extends Component {
   componentDidMount = async () => {
-    if(this.props.user) {
-      var socket = io.connect('http://localhost:5000');
-      socket.on('connect', () => {
-        socket.emit('load', { [this.props.user._id]: socket.id });
-        console.log(socket.id)
-      });
+    const { user } = this.props
+    if(user) {
+      const socket = new Socket(user);
+      socket.listenOrder();
     }
   }
   render() {
     return (
-      <Router forceRefresh={false}>
+      <Router forceRefresh={true}>
         <Switch>
           <Route exact path="/" component={Login_Page} />
           <Route path="/register" component={Register_Page}/>

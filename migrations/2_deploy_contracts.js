@@ -6,18 +6,26 @@ var Transaction = artifacts.require("./Transaction.sol");
 var Sender = artifacts.require("./Sender.sol");
 
 
+var fs = require('fs');
+var ethFile = `${__dirname}/../client/src/eth.json`;
+var eth = require(ethFile);
+
 
 module.exports = function(deployer, network, accounts) {
-  // deployer.deploy(Sender_Auth);
-  // deployer.deploy(Driver_Auth);
-  // deployer.deploy(Sender_Request);
-  // deployer.deploy(Driver_Request);
-  // deployer.deploy(Transaction);
+
 
   deployer.deploy(Sender).then(function() {
     return deployer.deploy(Transaction, Sender.address);
   }).then(function(instance) {
-    console.log(instance.address)
+    eth.sender_addr = Sender.address;
+    eth.transaction_addr = instance.address;
+
+    fs.writeFile(ethFile, JSON.stringify(eth, null, 2), function (err) {
+      if (err) return console.log(err);
+      console.log(JSON.stringify(eth));
+      console.log('writing to ' + ethFile);
+    });
+
   });
 };
 

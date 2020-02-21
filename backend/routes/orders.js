@@ -14,16 +14,21 @@ const addOrder = async (req, res) => {
     const result = await (await newOrder.save()).populate('uuid').execPopulate()
 
     if(result) {
-      const { uuid, txnTime } = result
+      //通知司機有訂單
       io.to(duid).emit('sendOrder', result);
-
-      console.log(result)
     }
 
-    res.json(result)
+    res.json({
+      status: true,
+      result
+    })
+
   } catch (error) {
     
-    res.json('Fail!')
+    res.json({
+      status: false,
+      msg: error.toString()
+    })
   }
 
   
@@ -48,8 +53,6 @@ const getOrder = async (req, res) => {
         conditions.duid = uid[1];
     }
 
-    console.log(conditions)
-
     const orders = await Order.find(conditions).populate(population).exec()
 
     res.json(orders)
@@ -62,6 +65,30 @@ const getOrder = async (req, res) => {
   
 }
 
+const updateOrderStatus = async (req, res) => {
+  const { orderId, status } = req.body
+
+  const orderDoc = await Order.findByIdAndUpdate(orderId,{
+    status: status
+  }, {
+    useFindAndModify: false,
+    new: true
+  }).populate('uuid').exec()
+
+  if(orderDoc) {
+    //通知使用者司機選取訂單
+    console.log(orderDoc.uuid._id)
+    io.to(orderDoc.uuid._id).emit('updateSendingStatus', {
+      orderSending: false,
+      orderDoc
+    });
+    res.json(orderDoc)
+  } else {
+    res.json('Fail!')
+  }
+}
+
+
 
 const test = async (req, res) => {
   io.to(req.body.uid[0]).emit('sendOrder', "hongwei");
@@ -70,6 +97,7 @@ const test = async (req, res) => {
 
 router.route('/add').post(addOrder)
 router.route('/get/:type').post(getOrder)
+router.route('/updateStatus').post(updateOrderStatus)
 router.route('/test').post(test)
 
 export default router

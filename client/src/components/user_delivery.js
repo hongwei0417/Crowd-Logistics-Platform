@@ -7,6 +7,8 @@ import axios from 'axios';
 import ethFile from '../eth.json';
 import Transaction from '../contracts/Transaction.json'
 import { newTXN, newBcValue, clearTXN } from '../actions/txnAction'
+import { getOrder } from '../modules/eth'
+
 
 
 export class user_delivery extends Component {
@@ -33,7 +35,21 @@ export class user_delivery extends Component {
     this.updateEther = this.updateEther.bind(this)
   }
 
-  componentDidMount = async () => {
+  async componentDidUpdate(pp, ps) {
+    const { showModal, loading } = this.state
+    const { orderSending, currentOrder } = this.props
+
+    if(loading && showModal && !orderSending) {
+      this.setState({
+        showModal: false,
+        loading: false,
+      })
+
+      console.log(currentOrder)
+    }
+  }
+
+  async componentDidMount() {
 
     const { web3 } = this.props
 
@@ -54,6 +70,8 @@ export class user_delivery extends Component {
   
   placeOrder = async (e) => {
     e.preventDefault()
+
+    this.setState({loading: true})
     
     const { accounts } = this.props
     const { orderInfo, contract } = this.state
@@ -77,17 +95,15 @@ export class user_delivery extends Component {
     ).send(options)
 
     //紀錄到redux
-    await newTXN(receipt);
-
-    this.setState({loading: true})
+    await newTXN({receipt, orderSending: true});
   }
 
   //訂單開始處理
   handleOrderStart = (event) => {
 
     const checkState = setInterval(async () => {
-      console.log(this.state.loading)
-      if(this.state.loading) {
+
+      if(this.props.orderSending) {
         clearInterval(checkState)
         const { user, receipt } = this.props
 
@@ -111,15 +127,17 @@ export class user_delivery extends Component {
   //搜尋司機
   search_driver = async () => {
 
+
+    //之後透過智能合約這個去篩選司機
     const res = await axios.post('http://localhost:5000/drivers/getDrivers')
 
     await this.setState({drivers: res.data, showModal: true})
 
-    this.select_drivers_animation()
+    this.select_drivers()
   }
 
   //每隔400ms切換選擇司機
-  select_drivers_animation = () => {
+  select_drivers = () => {
 
     console.log(this.props.bcValue)
     const interval = setInterval(() => {
@@ -162,14 +180,21 @@ export class user_delivery extends Component {
   //通知司機
   noticeDriver = async (driver) => {
 
-    const { user, bcValue } = this.props
+    const { user, bcValue, socket } = this.props
 
-    axios.post('http://localhost:5000/orders/add', {
+    const res = await axios.post('http://localhost:5000/orders/add', {
       uuid: user._id,
       duid: driver.uid._id,
       txnTime: bcValue[1],
       status: "wating"
     })
+
+    if(res.data.status) {
+      //監聽司機接取訂單狀態
+      socket.listenOrderStatus()
+    } else {
+      alert(res.data.msg)
+    }
 
   }
 
@@ -191,10 +216,24 @@ export class user_delivery extends Component {
     console.log(this.state.orderInfo)
   }
 
+  test = async () => {
+    // this.props.dispatch({
+    //   type: 'NEW_ORDER',
+    //   currentOrder: {},
+    // })
+    // const { uuid, txnTime } = this.props.currentOrder
+    // const result = await getOrder({
+    //   account: {
+    //     address: "0x8fDeB8BbA487F5b5aBB912435c0F2E0E8c5C22fC"
+    //   }
+    // }, "1581958965")
+
+  }
+
   render() {
     return (
       <div>
-        <button onClick={this.noticeDriver}>123</button>
+        <button onClick={this.test}>123</button>
         <Accordion>
           <Card className="text-center">
             <Accordion.Toggle
@@ -378,9 +417,12 @@ export class user_delivery extends Component {
 
 const mapStateToProps = state => {
   return {
+    socket: state.toolState.socket,
     user: state.userState.user,
     receipt: state.txnState.receipt,
     bcValue: state.txnState.bcValue,
+    orderSending: state.txnState.orderSending,
+    currentOrder: state.txnState.currentOrder,
   }
 }
 

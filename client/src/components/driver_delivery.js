@@ -5,7 +5,7 @@ import styles from '../css/Driver_delivery.module.css'
 import axios from 'axios'; 
 import ethFile from '../eth.json';
 import Transaction from '../contracts/Transaction.json'
-import { updateOrderList } from '../actions/txnAction'
+import { transform_status } from '../modules/tools'
 
 
 
@@ -16,16 +16,12 @@ export class driver_delivery extends Component {
     balance: "",
     loading: false,
     showModal: false,
-  }
-
-  constructor(props) {
-    super(props)
-
+    orderList: []
   }
 
   componentDidMount = async () => {
 
-    const { web3, user, updateOrder } = this.props
+    const { web3, user } = this.props
 
     const contract = new web3.eth.Contract(Transaction.abi, ethFile.transaction_addr);
 
@@ -34,23 +30,26 @@ export class driver_delivery extends Component {
       population: ["uuid"]
     })
 
-    await updateOrder(res.data)
+    this.setState({
+      orderList: res.data,
+      contract
+    })
 
     console.log(res.data)
-    // this.setState({ contract })
-
   };
 
   convert_date = (dateNumber) => {
     let d = new Date(parseInt(dateNumber)*1000)
+    let hours = ("0" + d.getHours()).slice(-2);
+    let minutes = ("0" + d.getMinutes()).slice(-2);
 
-    let dateString = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}號${d.getHours()}點${d.getMinutes()}`
+    let dateString = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} \xa0\xa0${hours}:${minutes}`
 
     return dateString;
   }
 
   render() {
-    const { orderList } = this.props
+    const { orderList } = this.state
     return (
       <div>
         <Table striped bordered hover variant="dark" responsive>
@@ -59,6 +58,7 @@ export class driver_delivery extends Component {
               <th></th>
               <th>姓名</th>
               <th>電話</th>
+              <th>訂單狀態</th>
               <th>交易時間</th>
               <th>查看詳情</th>
             </tr>
@@ -71,9 +71,10 @@ export class driver_delivery extends Component {
                   <td>{i+1}</td>
                   <td>{order.uuid.username}</td>
                   <td>{order.uuid.phone_number}</td>
+                  <td>{transform_status(order.status)}</td>
                   <td>{this.convert_date(order.txnTime)}</td>
                   <td>
-                    <Button>點擊查看</Button>
+                    <Button variant="secondary" >點擊查看</Button>
                   </td>
                 </tr>
               )
@@ -90,14 +91,12 @@ const mapStateToProps = state => {
   return {
     user: state.userState.user,
     receipt: state.txnState.receipt,
-    orderList: state.txnState.orderList,
   }
 }
 
 const mapDispatchToProps  = dispatch => {
   return {
     dispatch,
-    updateOrder: (list) => dispatch(updateOrderList(list)) 
   }
 }
 

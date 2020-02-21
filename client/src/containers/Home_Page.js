@@ -45,9 +45,9 @@ class Home_Page extends Component {
               <ListGroup.Item action variant="success">Blockchain address： {user.account.address}</ListGroup.Item>
               <ListGroup.Item action variant="info">Private key： {user.account.privateKey}</ListGroup.Item>
               {
-                this.state.transactions.map((receipt, i) => {
+                this.state.transactions.map((txn, i) => {
                   return (
-                    <ListGroup.Item action key={i} >{receipt.transactionHash}</ListGroup.Item>
+                    <ListGroup.Item action key={i} >{txn.receipt.transactionHash}</ListGroup.Item>
                   )
                 })
               }

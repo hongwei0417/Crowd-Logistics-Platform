@@ -1,7 +1,10 @@
 import storage from "redux-persist/lib/storage";
 import { REHYDRATE } from 'redux-persist'
 
-const initialState = {}
+const initialState = {
+  user: null,
+  firstLoading: false,
+}
 
 export default (state = initialState, action) => {
   switch (action.type) {
@@ -21,10 +24,16 @@ export default (state = initialState, action) => {
       ...state,
       user: action.payload
     };
+  case 'UPDATE_FIRST_LOADING':
+    return {
+      ...state,
+      firstLoading: action.status
+    }
+
   case 'LOGOUT':
     storage.removeItem('persist:root')
     return initialState
-
+    
   default:
     return state
   }

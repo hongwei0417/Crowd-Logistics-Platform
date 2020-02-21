@@ -1,6 +1,7 @@
 // import eth_wal from 'ethereumjs-wallet'
 // import hdkey from 'ethereumjs-wallet/hdkey'
 import { Transaction } from 'ethereumjs-tx'
+import cTransaction from '../contracts/Transaction.json'
 
 export const newAccount = async () => {
 
@@ -27,19 +28,6 @@ export const sendEther = async (addr, ether) => {
   })
 
   return receipt
-}
-
-export const pushOrder = async (addr, order) => {
-
-  const accounts = await web3.eth.getAccounts()
-  const contract = new web3.eth.Contract(Transaction.abi);
-
-  
-  const receipt = await web3.eth.sendTransaction({
-    from: accounts[0],
-    to: addr,
-    value: ether
-  })
 }
 
 

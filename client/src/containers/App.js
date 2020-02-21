@@ -11,17 +11,21 @@ import Home_Page from './Home_Page'
 import Buy_Page from './Buy_Page'
 import Delivery_Page from './Delivery_Page'
 import Socket from '../modules/sockets'
-
-
+import OrderModal from '../components/order_modal'
 
 class App extends Component {
+
   componentDidMount = async () => {
-    const { user } = this.props
+    const { user, dispatch } = this.props
     if(user) {
       const socket = new Socket(user);
-      socket.listenOrder();
+      socket.listenOrderComing();
+
+      dispatch({type: 'NEW_SOCKET', socket})
     }
   }
+
+
   render() {
     return (
       <Router forceRefresh={true}>
@@ -32,6 +36,7 @@ class App extends Component {
           <Route path="/buy" component={Buy_Page}/>
           <Route path="/delivery" component={Delivery_Page}/>
         </Switch>
+        <OrderModal />
       </Router>
     );
   }
@@ -41,7 +46,7 @@ class App extends Component {
 
 const mapStateToProps = state => {
   return {
-    user: state.userState.user
+    user: state.userState.user,
   }
 }
 

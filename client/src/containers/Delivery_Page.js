@@ -19,8 +19,6 @@ export class Delivery_Page extends Component {
   
   componentDidMount = async () => {
 
-    console.log(this.props)
-
     if(this.props.user) {
       const web3 = await getWeb3();
       const accounts = await web3.eth.getAccounts();

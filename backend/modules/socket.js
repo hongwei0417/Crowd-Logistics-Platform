@@ -10,7 +10,6 @@ export default async () => {
       Object.assign(clients, data)
 
       console.log(clients)
-      console.log(socket.id)
     });
   });
 }

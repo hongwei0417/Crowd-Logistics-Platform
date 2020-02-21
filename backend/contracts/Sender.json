@@ -3815,14 +3815,12 @@
             {
               "indexed": false,
               "name": "",
-              "type": "address",
-              "internalType": "address"
+              "type": "address"
             },
             {
               "indexed": false,
               "name": "",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint256"
             }
           ],
           "name": "order_time",
@@ -3836,7 +3834,7 @@
     }
   },
   "schemaVersion": "3.0.16",
-  "updatedAt": "2020-02-15T07:41:28.476Z",
+  "updatedAt": "2020-02-19T05:25:26.918Z",
   "devdoc": {
     "methods": {}
   },

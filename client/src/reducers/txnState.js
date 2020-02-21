@@ -1,6 +1,10 @@
 const initialState = {
   orderComing: false,
-  orderList: []
+  orderSending: false,
+  currentOrder: null,
+  bcValue: null,
+  receipt: null,
+  // orderList: []
 }
 
 export default (state = initialState, action) => {
@@ -10,6 +14,7 @@ export default (state = initialState, action) => {
     return { 
       ...state,
       receipt: action.receipt,
+      orderSending: action.orderSending
     }
 
   case 'NEW_BCVALUE':
@@ -23,10 +28,13 @@ export default (state = initialState, action) => {
       ...state,
       currentOrder: action.currentOrder,
       orderComing: true,
-      orderList: [
-        ...state.orderList,
-        action.currentOrder
-      ]
+    }
+
+  case 'UPDATE_SEND_STATUS':
+    return {
+      ...state,
+      orderSending: action.orderSending,
+      currentOrder: action.orderDoc
     }
 
   case 'UPDATE_ORDER_LIST':
@@ -35,7 +43,14 @@ export default (state = initialState, action) => {
       orderList: action.orderList
     }
 
-  case 'CLEAR_TXN':
+  case 'UPDATE_ORDER_STATUS':
+    return {
+      ...state,
+      orderComing: false,
+      currentOrder: action.currentOrder,
+    }
+
+  case 'LOGOUT':
     return initialState;
 
   default:

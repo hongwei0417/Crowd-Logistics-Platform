@@ -1,5 +1,11 @@
 import React, { Component } from 'react';
 import { Nav, Navbar, Form, NavDropdown, FormControl, Button } from 'react-bootstrap'
+import { store } from '../index'
+import { logout } from '../actions/userAction'
+
+const handleLogout = () => {
+  store.dispatch(logout())
+}
 
 const navbar = (props) => {
 
@@ -22,10 +28,12 @@ const navbar = (props) => {
             // </NavDropdown>
           }
         </Nav>
-        <Form inline>
+        {/* <Form inline>
           <FormControl type="text" placeholder="Search" className="mr-sm-2" />
           <Button variant="outline-success" variant="outline-light">Search</Button>
-        </Form>
+        </Form> */}
+        <Button variant="outline-success" variant="outline-light" onClick={handleLogout}>Logout</Button>
+
       </Navbar.Collapse>
     </Navbar>
   );

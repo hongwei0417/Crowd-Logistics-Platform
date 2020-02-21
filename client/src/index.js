@@ -42,7 +42,7 @@ export const store = createStore(
 
 const persistor = persistStore(store, null, () => {
   // if you want to get restoredState
-  console.log("restoredState", store.getState());
+  // console.log("restoredState", store.getState());
 });
 
 

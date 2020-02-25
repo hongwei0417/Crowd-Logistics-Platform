@@ -1,9 +1,9 @@
 export const transform_status = (status) => {
   switch(status) {
     case "wating":
-      return "等待中"
+      return "待處理"
     case "refused":
-      return "訂單被拒絕"
+      return "訂單已拒絕"
     case "carrying":
       return "運送中"
     case "completed":

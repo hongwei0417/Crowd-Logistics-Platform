@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Jumbotron, Button, ButtonGroup, Card, ListGroup, ListGroupItem, Modal } from 'react-bootstrap'
+import { Button, ButtonGroup, Card, ListGroup, ListGroupItem, Modal } from 'react-bootstrap'
 import { getOrder } from '../modules/eth'
 import styles from '../css/modal.module.css'
 import { updateOrderStatus } from '../actions/txnAction'
@@ -79,27 +79,28 @@ export class order_modal extends Component {
 
   handleCommit = async (e) => {
 
-    if(e.target.value == 1) {
-      const res = await axios.post('http://localhost:5000/orders/updateStatus', {
-        orderId: this.props.currentOrder.id,
-        status: "refused"
-      })
+    const { currentOrder, updateStatus } = this.props
+    let status = null
 
-      console.log(res.data)
-
-      this.props.updateStatus(res.data)
-      
-    } else if (e.target.value == 2) {
-
-      const res = await axios.post('http://localhost:5000/orders/updateStatus', {
-        orderId: this.props.currentOrder.id,
-        status: "carrying"
-      })
-
-      console.log(res.data)
-
-      this.props.updateStatus(res.data)
+    switch(e.target.value) {
+      case "1":
+        status = "refused"
+        break
+      case "2":
+        status = "carrying"
+        break
     }
+
+
+    if(status) {
+      const res = await axios.post('http://localhost:5000/orders/updateStatus', {
+        orderId: currentOrder.id,
+        status
+      })
+
+      updateStatus(res.data)
+    }
+    
   }
 
 

@@ -50,6 +50,9 @@ export default (state = initialState, action) => {
       currentOrder: action.currentOrder,
     }
 
+  case 'CLEAR_TXN':
+    return initialState
+
   case 'LOGOUT':
     return initialState;
 

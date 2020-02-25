@@ -7,6 +7,7 @@ import getWeb3 from '../utils/getWeb3'
 import * as Sockets from '../modules/sockets'
 import { Button, ToggleButtonGroup, ToggleButton  } from 'react-bootstrap'
 import styles from '../css/Delivery_Page.module.css'
+import Modal from '../components/modal'
 
 
 export class Delivery_Page extends Component {
@@ -67,7 +68,12 @@ export class Delivery_Page extends Component {
         return (
           <div>
             <Navbar/>
-            <div>尚未連接區塊鏈</div>
+            <Modal
+              show={true}
+              backdrop={false}
+            >
+              <h1 className='text-center'>匯入區塊鏈中...</h1>
+            </Modal>
           </div>
         )
       }

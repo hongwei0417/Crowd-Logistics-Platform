@@ -26,9 +26,9 @@ class Socket {
   }
 
   listenOrderStatus() {
-    this.socket.on('updateSendingStatus', (payload) => {
-      console.log()
-      store.dispatch(updateSendingStatus(payload))
+    this.socket.on('updateSendingStatus', (orderDoc) => {
+      store.dispatch(updateSendingStatus(orderDoc))
+      alert('已接受到訂單訊息');
     });
     console.log(`${this.id}: Order status listening!`)
   }

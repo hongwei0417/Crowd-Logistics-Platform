@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Button, Card, Form, Row, Col, Accordion, ListGroup, Spinner } from 'react-bootstrap'
+import { Button, Card, Form, Row, Col, Accordion, ListGroup, Spinner, Image, Toast } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import styles from '../css/Sender_delivery.module.css'
 import SearchModal from './modal'
@@ -23,9 +23,14 @@ export class user_delivery extends Component {
       isUrgent: false,
     },
     showModal: false,
+    showHandling: false,
+    showCompleted: false,
+    deliveryText: "",
+    textInterval: null,
     drivers: [],
     second: 10,
     number: 0,
+    txnDoc: null,
   }
 
   constructor(props) {
@@ -35,9 +40,9 @@ export class user_delivery extends Component {
     this.updateEther = this.updateEther.bind(this)
   }
 
-  async componentDidUpdate(pp, ps) {
-    const { showModal, loading } = this.state
-    const { orderSending, currentOrder } = this.props
+  async componentDidUpdate() {
+    const { showModal, showHandling, showCompleted, loading } = this.state
+    const { orderSending, currentOrder, clearTXN } = this.props
 
     if(loading && showModal && !orderSending) {
       this.setState({
@@ -47,6 +52,41 @@ export class user_delivery extends Component {
 
       console.log(currentOrder)
     }
+
+
+    //訂單是否處理中or處理完成
+    if(currentOrder && !showHandling && !showCompleted) {
+      const { status } = currentOrder
+      switch(status) {
+        case "wating":
+        case "carrying":
+          this.setState({showHandling: true})
+          this.start_delivery_text()
+          break;
+        
+      }
+    }
+
+    //訂單是否處理完成
+    if(currentOrder && !showCompleted && showHandling) {
+      const { status } = currentOrder
+      switch(status) {
+        case "refused":
+          alert("你的訂單遭到拒絕!")
+          clearTXN(); //清空txnState
+          this.setState({showHandling: false})
+          break;
+        case "completed":
+          alert("你的訂單已完成!")
+          clearTXN(); //清空txnState
+          this.setState({
+            showHandling: false,
+            showCompleted: true,
+          })
+          break;
+      }
+    }
+
   }
 
   async componentDidMount() {
@@ -59,6 +99,10 @@ export class user_delivery extends Component {
     this.updateEther()
   };
 
+  async componentWillUnmount() {
+    clearInterval(this.state.textInterval)
+  }
+
   updateEther = async () => {
     const res = await axios.post('http://localhost:5000/users/getBalance', {
       address: this.props.user.account.address
@@ -66,6 +110,26 @@ export class user_delivery extends Component {
     this.setState({
       balance: parseInt(res.data)
     })
+  }
+
+  start_delivery_text = () => {
+    let n = 0
+    const interval = setInterval(() => {
+      let text = "司機正在運送中"
+      if(n > 4) {
+        n = 0;
+        text = "司機正在運送中"
+      } else {
+        n += 1;
+      }
+      for(let i = 0; i < n; i++) {
+        text += "·"
+      }
+      this.setState({
+        deliveryText: text
+      })
+    }, 300)
+    this.setState({textInterval: interval})
   }
   
   placeOrder = async (e) => {
@@ -116,9 +180,11 @@ export class user_delivery extends Component {
         })
 
         await this.props.newBcValue(event.returnValues)
+        this.setState({txnDoc: res.data})
+
+        console.log(res.data)
 
         this.search_driver()
-        console.log(event.returnValues)
       }
     }, 500)
     
@@ -180,13 +246,15 @@ export class user_delivery extends Component {
   //通知司機
   noticeDriver = async (driver) => {
 
+    const { txnDoc } = this.state
     const { user, bcValue, socket } = this.props
 
     const res = await axios.post('http://localhost:5000/orders/add', {
       uuid: user._id,
       duid: driver.uid._id,
       txnTime: bcValue[1],
-      status: "wating"
+      status: "wating",
+      txnid: txnDoc._id,
     })
 
     if(res.data.status) {
@@ -195,9 +263,7 @@ export class user_delivery extends Component {
     } else {
       alert(res.data.msg)
     }
-
   }
-
 
   convert_date = (datetime) => {
     let date = new Date(datetime)
@@ -231,187 +297,209 @@ export class user_delivery extends Component {
   }
 
   render() {
-    return (
-      <div>
-        <button onClick={this.test}>123</button>
-        <Accordion>
-          <Card className="text-center">
-            <Accordion.Toggle
-              className='bg-warning' 
-              as={Card.Header}
-              eventKey="0"
-              onClick={() => this.setState({open: !this.state.open})}
-            >
-              {this.state.open ? '輸入您的訂單資訊' : '我有貨物要送'}
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey="0" className={styles.flexbox}>
-              <div className={styles._flexbox}>
-                <Card.Body className={styles.fb}>
-                  <Form onSubmit={(e) => this.placeOrder(e)}>
-                    <Form.Row>
-                      <Form.Group as={Col}>
-                        <Form.Label>選擇服務</Form.Label>
-                        <Row>
-                          <Col>
-                            <Form.Check
-                              checked={this.state.orderInfo.service==0}
-                              type="radio"
-                              label="機車(20kg)"
-                              name="radios1"
-                              id="rd1"
-                              onChange={() => this.setOrder('service', 0)}
-                            />
-                          </Col>
-                          <Col>
-                            <Form.Check
-                              checked={this.state.orderInfo.service==1}
-                              type="radio"
-                              label="貨車(500kg)"
-                              name="radios1"
-                              id="rd2"
-                              onChange={() => this.setOrder('service', 1)}
-                            />
-                          </Col>
-                        </Row>
-                      </Form.Group>
-                      <Form.Group as={Col}>
-                        <Form.Label>是否為急件</Form.Label>
-                        <Row>
-                          <Col>
-                            <Form.Check
-                              checked={this.state.orderInfo.isUrgent==true}
-                              type="radio"
-                              label="是"
-                              name="radios2"
-                              id="rd3"
-                              onChange={() => this.setOrder('isUrgent', true)}
-                            />
-                          </Col>
-                          <Col>
-                            <Form.Check
-                              checked={this.state.orderInfo.isUrgent==false}
-                              type="radio"
-                              label="否"
-                              name="radios2"
-                              id="rd4"
-                              onChange={() => this.setOrder('isUrgent', false)}
-                            />
-                          </Col>
-                        </Row>
-                      </Form.Group>
-                    </Form.Row>
-
-                    <Form.Group>
-                      <Form.Label>貨品大小</Form.Label>
-                      <Form.Control
-                        required
-                        type="input"
-                        placeholder={`貨物重量(最多${this.state.orderInfo.service==0?'20kg':'500kg'})`}
-                        onChange={(e) => this.setOrder('boxSize', e.target.value)}
-                      />
-                    </Form.Group>
-
-                    <Form.Group>
-                      <Form.Label>寄件日期時間</Form.Label>
-                      <Form.Control
-                        required
-                        type="datetime-local"
-                        onChange={(e) => this.convert_date(e.target.value)}
-                      />
-                    </Form.Group>
-                    
-                    <Form.Group>
-                      <Form.Label>貨物起點</Form.Label>
-                      <Form.Control
-                        required
-                        type="input"
-                        placeholder="起點地址"
-                        onChange={(e) => this.setOrder('dlStart', e.target.value)}
-                      />
-                    </Form.Group>
-
-                    <Form.Group>
-                      <Form.Label>貨物終點</Form.Label>
-                      <Form.Control
-                        required
-                        type="input"
-                        placeholder="迄點地址"
-                        onChange={(e) => this.setOrder('dlEnd', e.target.value)}
-                      />
-                    </Form.Group>
-
-                    <Form.Row>
-                      <Col>
-                        <Form.Group>
-                          <Form.Label>收件人</Form.Label>
-                          <Form.Control
-                            required
-                            type="input"
-                            placeholder="收件人姓名"
-                            onChange={(e) => this.setOrder('rName', e.target.value)}
-                          />
+    const { showHandling, showCompleted, deliveryText } = this.state
+    if(showHandling) {
+      return (
+        <div className='d-flex justify-content-center'>
+          <Image fluid src="https://i1.wp.com/inc42.com/wp-content/uploads/2019/07/food-delivery.jpg?fit=1360%2C1020&ssl=1"/>
+          <div className='position-absolute mt-4 font-weight-bold' style={{fontSize: '30px'}}>{deliveryText}</div>
+        </div>
+      )
+    } else if(false) {
+      return (
+        <div className='d-flex justify-content-center align-items-center'>
+          <Toast>
+            <Toast.Header>
+              <img src="holder.js/20x20?text=%20" className="rounded mr-2" alt="" />
+              <strong className="mr-auto">Bootstrap</strong>
+              <small>just now</small>
+            </Toast.Header>
+            <Toast.Body>See? Just like this.</Toast.Body>
+          </Toast>
+        </div>
+      )
+    } else {
+      return (
+        <div>
+          <Accordion>
+            <Card className="text-center">
+              <Accordion.Toggle
+                className='bg-warning' 
+                as={Card.Header}
+                eventKey="0"
+                onClick={() => this.setState({open: !this.state.open})}
+              >
+                {this.state.open ? '輸入您的訂單資訊' : '我有貨物要送'}
+              </Accordion.Toggle>
+              <Accordion.Collapse eventKey="0" className={styles.flexbox}>
+                <div className={styles._flexbox}>
+                  <Card.Body className={styles.fb}>
+                    <Form onSubmit={(e) => this.placeOrder(e)}>
+                      <Form.Row>
+                        <Form.Group as={Col}>
+                          <Form.Label>選擇服務</Form.Label>
+                          <Row>
+                            <Col>
+                              <Form.Check
+                                checked={this.state.orderInfo.service==0}
+                                type="radio"
+                                label="機車(20kg)"
+                                name="radios1"
+                                id="rd1"
+                                onChange={() => this.setOrder('service', 0)}
+                              />
+                            </Col>
+                            <Col>
+                              <Form.Check
+                                checked={this.state.orderInfo.service==1}
+                                type="radio"
+                                label="貨車(500kg)"
+                                name="radios1"
+                                id="rd2"
+                                onChange={() => this.setOrder('service', 1)}
+                              />
+                            </Col>
+                          </Row>
                         </Form.Group>
-                      </Col>
-                      <Col>
-                        <Form.Group>
-                          <Form.Label>收件人聯絡方式</Form.Label>
-                          <Form.Control
-                            required
-                            type="input"
-                            placeholder="手機 or 電話"
-                            onChange={(e) => this.setOrder('rContact', e.target.value)}
-                          />
+                        <Form.Group as={Col}>
+                          <Form.Label>是否為急件</Form.Label>
+                          <Row>
+                            <Col>
+                              <Form.Check
+                                checked={this.state.orderInfo.isUrgent==true}
+                                type="radio"
+                                label="是"
+                                name="radios2"
+                                id="rd3"
+                                onChange={() => this.setOrder('isUrgent', true)}
+                              />
+                            </Col>
+                            <Col>
+                              <Form.Check
+                                checked={this.state.orderInfo.isUrgent==false}
+                                type="radio"
+                                label="否"
+                                name="radios2"
+                                id="rd4"
+                                onChange={() => this.setOrder('isUrgent', false)}
+                              />
+                            </Col>
+                          </Row>
                         </Form.Group>
-                      </Col>
-                    </Form.Row>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                    >
-                      {
-                        this.state.loading ? (
-                          <Spinner
-                            as="span"
-                            animation="grow"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                          />
-                        ) : null
-                      }
-                      {
-                        this.state.loading ? 'Loading' : '送出訂單'
-                      }
-                    </Button>
-                  </Form>
-                </Card.Body>
-              </div>
-            </Accordion.Collapse>
-            <Card.Footer className="text-muted">{`目前的以太幣：${this.state.balance} (wei)`}</Card.Footer>
-          </Card>
-        </Accordion>
-        <SearchModal
-          show={this.state.showModal}
-          backdrop={false}
-          className={styles.modal}
-          title='搜尋司機請等候...'
-          onShow={this.reciprocal}
-        >
-          <div>
-            <ListGroup>
-              <ListGroup.Item variant="warning" className="text-center">等候 {this.state.second} 秒</ListGroup.Item>
-              {
-                this.state.drivers.map((driver, i) => {
-                  return (
-                    <ListGroup.Item action key={i} variant={this.state.number == i ? "success" : ""}>{driver.uid.username}</ListGroup.Item>
-                  )
-                })
-              }
-            </ListGroup>
-          </div>
-        </SearchModal>
-      </div>
-    )
+                      </Form.Row>
+  
+                      <Form.Group>
+                        <Form.Label>貨品大小</Form.Label>
+                        <Form.Control
+                          required
+                          type="input"
+                          placeholder={`貨物重量(最多${this.state.orderInfo.service==0?'20kg':'500kg'})`}
+                          onChange={(e) => this.setOrder('boxSize', e.target.value)}
+                        />
+                      </Form.Group>
+  
+                      <Form.Group>
+                        <Form.Label>寄件日期時間</Form.Label>
+                        <Form.Control
+                          required
+                          type="datetime-local"
+                          onChange={(e) => this.convert_date(e.target.value)}
+                        />
+                      </Form.Group>
+                      
+                      <Form.Group>
+                        <Form.Label>貨物起點</Form.Label>
+                        <Form.Control
+                          required
+                          type="input"
+                          placeholder="起點地址"
+                          onChange={(e) => this.setOrder('dlStart', e.target.value)}
+                        />
+                      </Form.Group>
+  
+                      <Form.Group>
+                        <Form.Label>貨物終點</Form.Label>
+                        <Form.Control
+                          required
+                          type="input"
+                          placeholder="迄點地址"
+                          onChange={(e) => this.setOrder('dlEnd', e.target.value)}
+                        />
+                      </Form.Group>
+  
+                      <Form.Row>
+                        <Col>
+                          <Form.Group>
+                            <Form.Label>收件人</Form.Label>
+                            <Form.Control
+                              required
+                              type="input"
+                              placeholder="收件人姓名"
+                              onChange={(e) => this.setOrder('rName', e.target.value)}
+                            />
+                          </Form.Group>
+                        </Col>
+                        <Col>
+                          <Form.Group>
+                            <Form.Label>收件人聯絡方式</Form.Label>
+                            <Form.Control
+                              required
+                              type="input"
+                              placeholder="手機 or 電話"
+                              onChange={(e) => this.setOrder('rContact', e.target.value)}
+                            />
+                          </Form.Group>
+                        </Col>
+                      </Form.Row>
+                      <Button
+                        type="submit"
+                        variant="primary"
+                      >
+                        {
+                          this.state.loading ? (
+                            <Spinner
+                              as="span"
+                              animation="grow"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                          ) : null
+                        }
+                        {
+                          this.state.loading ? 'Loading' : '送出訂單'
+                        }
+                      </Button>
+                    </Form>
+                  </Card.Body>
+                </div>
+              </Accordion.Collapse>
+              <Card.Footer className="text-muted">{`目前的以太幣：${this.state.balance} (wei)`}</Card.Footer>
+            </Card>
+          </Accordion>
+          <SearchModal
+            show={this.state.showModal}
+            backdrop={false}
+            className={styles.modal}
+            title='搜尋司機請等候...'
+            onShow={this.reciprocal}
+          >
+            <div>
+              <ListGroup>
+                <ListGroup.Item variant="warning" className="text-center">等候 {this.state.second} 秒</ListGroup.Item>
+                {
+                  this.state.drivers.map((driver, i) => {
+                    return (
+                      <ListGroup.Item action key={i} variant={this.state.number == i ? "success" : ""}>{driver.uid.username}</ListGroup.Item>
+                    )
+                  })
+                }
+              </ListGroup>
+            </div>
+          </SearchModal>
+        </div>
+      )
+    }
   }
 }
 

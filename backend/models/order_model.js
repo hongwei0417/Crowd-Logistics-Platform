@@ -6,14 +6,17 @@ const orderModel = new Schema({
   uuid: {
     type: Schema.Types.ObjectId,
     required: true,
-    trim: true,
     ref: 'User'
   },
   duid: {
     type: Schema.Types.ObjectId,
     required: true,
-    trim: true,
     ref: 'User'
+  },
+  txnid: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: 'Transaction'
   },
   txnTime: {
     type: Schema.Types.Long

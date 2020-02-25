@@ -15,11 +15,15 @@ function MyVerticallyCenteredModal(props) {
       onShow={props.onShow}
       onEnter={props.onEnter}
     >
-      <Modal.Header >
-        <Modal.Title className='font-weight-bold'>
-          {props.title}
-        </Modal.Title>
-      </Modal.Header>
+        {
+          props.title ? 
+            <Modal.Header >
+              <Modal.Title className='font-weight-bold'>
+                {props.title}
+              </Modal.Title>
+            </Modal.Header>
+            : null
+        }  
       <Modal.Body>
         {content}
       </Modal.Body>

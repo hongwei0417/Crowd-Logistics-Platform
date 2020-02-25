@@ -7,11 +7,11 @@ const router = Router()
 const addOrder = async (req, res) => {
 
   try {
-    const { uuid, duid, txnTime, status, } = req.body
+    const { uuid, duid, txnTime, status, txnid } = req.body
 
-    const newOrder = new Order({uuid, duid, txnTime, status })
+    const newOrder = new Order({uuid, duid, txnTime, status, txnid})
 
-    const result = await (await newOrder.save()).populate('uuid').execPopulate()
+    const result = await (await newOrder.save()).populate(['uuid', 'duid', 'txnid']).execPopulate()
 
     if(result) {
       //通知司機有訂單
@@ -73,11 +73,11 @@ const updateOrderStatus = async (req, res) => {
   }, {
     useFindAndModify: false,
     new: true
-  }).populate('uuid').exec()
+  }).populate(['uuid', 'duid', 'txnid']).exec()
 
   if(orderDoc) {
     //通知使用者司機選取訂單
-    console.log(orderDoc.uuid._id)
+    console.log((orderDoc.id).toString())
     io.to(orderDoc.uuid._id).emit('updateSendingStatus', {
       orderSending: false,
       orderDoc

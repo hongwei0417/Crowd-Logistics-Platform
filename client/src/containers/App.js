@@ -12,6 +12,7 @@ import Buy_Page from './Buy_Page'
 import Delivery_Page from './Delivery_Page'
 import Socket from '../modules/sockets'
 import OrderModal from '../components/order_modal'
+import Order_notice from '../components/order_notification'
 
 class App extends Component {
 
@@ -36,6 +37,7 @@ class App extends Component {
           <Route path="/buy" component={Buy_Page}/>
           <Route path="/delivery" component={Delivery_Page}/>
         </Switch>
+        {/* <Order_notice /> */}
         <OrderModal />
       </Router>
     );

@@ -18,10 +18,7 @@ const addOrder = async (req, res) => {
       io.to(duid).emit('sendOrder', result);
     }
 
-    res.json({
-      status: true,
-      result
-    })
+    res.json({status: true, result})
 
   } catch (error) {
     
@@ -66,7 +63,9 @@ const getOrder = async (req, res) => {
 }
 
 const updateOrderStatus = async (req, res) => {
-  const { orderId, status } = req.body
+  const { orderId, status, who, event } = req.body
+
+  let triggerData = {}
 
   const orderDoc = await Order.findByIdAndUpdate(orderId,{
     status: status
@@ -75,19 +74,25 @@ const updateOrderStatus = async (req, res) => {
     new: true
   }).populate(['uuid', 'duid', 'txnid']).exec()
 
+  switch(who) {
+    case "sender":
+      triggerData.client = orderDoc.duid._id
+      triggerData.data = status == "completed" ? null : orderDoc
+      break;
+    case "driver":
+      triggerData.client = orderDoc.uuid._id
+      triggerData.data = orderDoc
+      break;
+  }
+
   if(orderDoc) {
-    //通知使用者司機選取訂單
-    console.log((orderDoc.id).toString())
-    io.to(orderDoc.uuid._id).emit('updateSendingStatus', {
-      orderSending: false,
-      orderDoc
-    });
+    //通知使用者司機接取訂單
+    io.to(triggerData.client).emit(event, triggerData.data);
     res.json(orderDoc)
   } else {
     res.json('Fail!')
   }
 }
-
 
 
 const test = async (req, res) => {

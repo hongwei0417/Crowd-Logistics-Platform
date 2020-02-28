@@ -14,14 +14,13 @@ import Socket from '../modules/sockets'
 import OrderModal from '../components/order_modal'
 import Order_notice from '../components/order_notification'
 
+
 class App extends Component {
 
   componentDidMount = async () => {
     const { user, dispatch } = this.props
     if(user) {
       const socket = new Socket(user);
-      socket.listenOrderComing();
-
       dispatch({type: 'NEW_SOCKET', socket})
     }
   }
@@ -37,7 +36,7 @@ class App extends Component {
           <Route path="/buy" component={Buy_Page}/>
           <Route path="/delivery" component={Delivery_Page}/>
         </Switch>
-        {/* <Order_notice /> */}
+        <Order_notice />
         <OrderModal />
       </Router>
     );
@@ -49,6 +48,7 @@ class App extends Component {
 const mapStateToProps = state => {
   return {
     user: state.userState.user,
+    currentOrder: state.txnState.sender.currentOrder,
   }
 }
 

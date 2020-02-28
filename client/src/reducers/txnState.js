@@ -1,53 +1,33 @@
 const initialState = {
-  orderComing: false,
-  orderSending: false,
-  currentOrder: null,
-  bcValue: null,
-  receipt: null,
-  // orderList: []
+  sender: {
+    currentOrder: null,
+  },
+  driver: {
+    currentOrder: null,
+  }
 }
 
 export default (state = initialState, action) => {
   switch (action.type) {
 
-  case 'NEW_TXN':
-    return { 
-      ...state,
-      receipt: action.receipt,
-      orderSending: action.orderSending
-    }
-
-  case 'NEW_BCVALUE':
+  //更新訂單
+  case 'UPDATE_ORDER_STAUTS':
     return {
       ...state,
-      bcValue: action.bcValue,
+      [action.client]: {
+        ...state[action.client],
+        currentOrder: action.currentOrder
+      }
     }
 
+  //更新司機方
   case 'NEW_ORDER':
     return {
       ...state,
-      currentOrder: action.currentOrder,
-      orderComing: true,
-    }
-
-  case 'UPDATE_SEND_STATUS':
-    return {
-      ...state,
-      orderSending: action.orderSending,
-      currentOrder: action.orderDoc
-    }
-
-  case 'UPDATE_ORDER_LIST':
-    return {
-      ...state,
-      orderList: action.orderList
-    }
-
-  case 'UPDATE_ORDER_STATUS':
-    return {
-      ...state,
-      orderComing: false,
-      currentOrder: action.currentOrder,
+      driver: {
+        ...state.driver,
+        currentOrder: action.currentOrder,
+      }
     }
 
   case 'CLEAR_TXN':

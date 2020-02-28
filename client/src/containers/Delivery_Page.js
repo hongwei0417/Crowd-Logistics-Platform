@@ -87,7 +87,6 @@ export class Delivery_Page extends Component {
 const mapStateToProps = state => {
   return {
     user: state.userState.user,
-    receipt: state.txnState.receipt
   }
 }
 

@@ -5,7 +5,7 @@ import styles from '../css/Driver_delivery.module.css'
 import axios from 'axios'; 
 import ethFile from '../eth.json';
 import Transaction from '../contracts/Transaction.json'
-import { transform_status } from '../modules/tools'
+import { transform_status_to_chinese } from '../modules/tools'
 
 
 
@@ -53,6 +53,9 @@ export class driver_delivery extends Component {
         status = 'refused'
         break;
       case '3':
+        status = 'being confirm'
+        break;
+      case '4':
         status = 'completed'
         break;
     }
@@ -60,7 +63,9 @@ export class driver_delivery extends Component {
     if(status) {
       const res = await axios.post('http://localhost:5000/orders/updateStatus', {
         orderId: id,
-        status
+        status,
+        who: "driver",
+        event: "updateOrder"
       })
 
       orderList[n] = res.data
@@ -76,10 +81,12 @@ export class driver_delivery extends Component {
         return '1'
       case 'refused':
         return '2'
-      case 'completed':
+      case 'being confirm':
         return '3'
+      case 'completed':
+        return '4'
       default:
-        return '1'
+        return '0'
     }
 
   }
@@ -90,10 +97,12 @@ export class driver_delivery extends Component {
         return 'primary'
       case 'refused':
         return 'danger'
+      case 'being confirm':
+        return 'warning'
       case 'completed':
         return 'success'
       default:
-        return 'primary'
+        return 'secondary'
     }
   }
 
@@ -136,9 +145,7 @@ export class driver_delivery extends Component {
                   <td>{order.uuid.phone_number}</td>
                   <td>{this.convert_date(order.txnTime)}</td>
                   <td>
-                    <Dropdown>
-                      <Dropdown.Toggle variant={color}>{transform_status(order.status)}</Dropdown.Toggle>
-                      <Dropdown.Menu className="bg-light">
+                    <DropdownButton disabled={activeN == '4'} variant={color} title={transform_status_to_chinese(order.status)}>
                         <Dropdown.Item 
                           as="button"
                           value="1"
@@ -151,14 +158,13 @@ export class driver_delivery extends Component {
                           active={activeN == '2'}
                           onClick={(e) => this.update_status(e, i, order.id)}
                         >放棄訂單</Dropdown.Item>
-                        <Dropdown.Item 
+                        <Dropdown.Item
                           as="button"
                           value="3"
                           active={activeN == '3'}
                           onClick={(e) => this.update_status(e, i, order.id)}
-                        >訂單完成</Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
+                        >提交確認</Dropdown.Item>
+                    </DropdownButton>
                   </td>
                   <td>
                     <Button variant="secondary" block onClick={this.search_orderInfo}>點擊查看</Button>
@@ -177,7 +183,6 @@ export class driver_delivery extends Component {
 const mapStateToProps = state => {
   return {
     user: state.userState.user,
-    receipt: state.txnState.receipt,
   }
 }
 

@@ -3,9 +3,10 @@ import { connect } from 'react-redux'
 import { Button, ButtonGroup, Card, ListGroup, ListGroupItem, Modal } from 'react-bootstrap'
 import { getOrder } from '../modules/eth'
 import styles from '../css/modal.module.css'
-import { updateOrderStatus } from '../actions/txnAction'
+import { updateOrder } from '../actions/txnAction'
 import axios from 'axios'
-import { transform_status } from '../modules/tools'
+import { transform_status_to_chinese } from '../modules/tools'
+import { get_Status_number } from '../modules/tools'
 
 const importStyles = () => {
   return (
@@ -26,11 +27,16 @@ export class order_modal extends Component {
     orderInfo: null,
     showModal: false
   }
-
+  
   async componentDidMount() {
-    const {orderComing, currentOrder} = this.props
+    const {currentOrder} = this.props
 
-    if(orderComing) {
+    let number = -1
+    if(currentOrder) {
+      number = get_Status_number(currentOrder.status)
+    }
+
+    if(number == 0) {
       const { uuid, txnTime } = currentOrder
       const orderInfo = await getOrder(uuid, txnTime)
 
@@ -44,10 +50,14 @@ export class order_modal extends Component {
 
   async componentDidUpdate(prevProps, prevState) {
 
-    const {orderComing, currentOrder } = this.props
+    const {currentOrder} = this.props
 
+    let number = -1
+    if(currentOrder) {
+      number = get_Status_number(currentOrder.status)
+    }
     //有訂單但沒顯示畫面
-    if(orderComing && !prevState.showModal) { 
+    if(number == 0  && !prevState.showModal && !this.state.showModal) { 
       const { uuid, txnTime } = currentOrder
       const orderInfo = await getOrder(uuid, txnTime)
       this.setState({
@@ -58,7 +68,7 @@ export class order_modal extends Component {
     }
 
     //沒訂單但有顯示畫面
-    if(!orderComing && prevState.showModal) { 
+    if(typeof(maybeObject) == "null" && prevState.showModal) { 
       this.setState({
         orderInfo: null,
         showModal: false
@@ -68,18 +78,9 @@ export class order_modal extends Component {
 
   }
 
-  
-  handleOrderCome = () => { 
-    
-  }
-
-  handleOrderShow = async () => {
-    console.log('OK')
-  }
-
   handleCommit = async (e) => {
 
-    const { currentOrder, updateStatus } = this.props
+    const { currentOrder, updateOrder } = this.props
     let status = null
 
     switch(e.target.value) {
@@ -95,10 +96,16 @@ export class order_modal extends Component {
     if(status) {
       const res = await axios.post('http://localhost:5000/orders/updateStatus', {
         orderId: currentOrder.id,
-        status
+        status,
+        who: 'driver',
+        event: "updateOrder"
       })
 
-      updateStatus(res.data)
+      updateOrder(res.data, 'driver')
+      this.setState({
+        showModal: false,
+        orderInfo: null,
+      })
     }
     
   }
@@ -136,9 +143,10 @@ export class order_modal extends Component {
               </Card.Body>
               <ListGroup className="list-group-flush">
                 <ListGroupItem>{`訂單編號： ${currentOrder.id}`}</ListGroupItem>
-                <ListGroupItem>{`訂單狀態： ${transform_status(currentOrder.status)}`}</ListGroupItem>
+                <ListGroupItem>{`訂單狀態： ${transform_status_to_chinese(currentOrder.status)}`}</ListGroupItem>
                 <ListGroupItem>{`寄件人： ${currentOrder.uuid.username}`}</ListGroupItem>
-                <ListGroupItem>{`從　[${orderInfo[1]}]　到　[${orderInfo[2]}]`}</ListGroupItem>
+                <ListGroupItem>{`起始點： ${orderInfo[1]}`}</ListGroupItem>
+                <ListGroupItem>{`目的地： ${orderInfo[2]}`}</ListGroupItem>
                 <ListGroupItem>{`收件人： ${orderInfo[3]}`}</ListGroupItem>
                 <ListGroupItem>{`聯繫方式： ${orderInfo[4]}`}</ListGroupItem>
                 <ListGroupItem>{`運送方式： ${orderInfo[5] ? '機車' : '貨車'}`}</ListGroupItem>
@@ -168,16 +176,16 @@ export class order_modal extends Component {
 const mapStateToProps = state => {
   return {
     user: state.userState.user,
-    orderComing: state.txnState.orderComing,
     firstLoading: state.userState.firstLoading,
-    currentOrder: state.txnState.currentOrder
+    currentOrder: state.txnState.driver.currentOrder,
+
   }
 }
 
 const mapDispatchToProps  = dispatch => {
   return {
     dispatch,
-    updateStatus: (payload) =>　dispatch(updateOrderStatus(payload))
+    updateOrder: (order, who) => dispatch(updateOrder(order, who))
   }
 } 
 

@@ -1,39 +1,53 @@
 import io from 'socket.io-client'
 import { store } from '../index'
-import { addOrder, updateSendingStatus } from '../actions/txnAction'
+import { addOrder, updateOrder } from '../actions/txnAction'
 
 
 class Socket {
 
   constructor(user) {
     this.socket = io('http://localhost:5000');
-    this.connect(user)
+    this.listenConnect(user)
   }
 
-  connect(user) {
+  listenConnect(user) {
     this.socket.on('connect', () => {
       this.socket.emit('create', { [user._id]: this.socket.id });
       this.id = this.socket.id
-      console.log(this.socket.id)
+      this.listenOrderComing()
+      this.listenOrderUpdate('sender', 'updateOrder')
+      this.listenOrderUpdate('driver', 'confirmOrder')
     });
   }
 
   listenOrderComing() {
-    this.socket.on('sendOrder', (order) => {
-      store.dispatch(addOrder(order))
+    this.socket.on('sendOrder', (orderDoc) => {
+      store.dispatch(addOrder(orderDoc))
     });
-    console.log('Order coming listening!')
+    console.log(`司機方 [${this.id}]: 開始監聽 sendOrder`)
   }
 
-  listenOrderStatus() {
-    this.socket.on('updateSendingStatus', (orderDoc) => {
-      store.dispatch(updateSendingStatus(orderDoc))
-      alert('已接受到訂單訊息');
-    });
-    console.log(`${this.id}: Order status listening!`)
+  listenOrderUpdate(who, event) {
+    const { txnState } = store.getState()
+
+    if(txnState[who].currentOrder) {
+      this.socket.on(event, (orderDoc) => {
+        //回傳訂單資料
+        store.dispatch(updateOrder(orderDoc, who))
+      });
+      console.log(`${who == "sender" ? '寄送方' : '司機方'} [${this.id}]: 開始監聽 ${event}`)
+    }
   }
 
-  
+  emitTo(uid, event, data) {
+    this.socket.to(uid).emit(event, data);
+  }
+
+  removeEvent(name) {
+    this.socket.off(name);
+    console.log(`${this.id} 訂單監聽已結束!`)
+  }
+
 }
 
 export default Socket

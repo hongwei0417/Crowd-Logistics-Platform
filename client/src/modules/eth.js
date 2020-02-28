@@ -14,7 +14,5 @@ export const getOrder = async (user, txnTime) => {
 
   const result = await contract.methods.get_order_info(user.account.address, txnTime).call(options);
 
-  console.log(result)
-
   return result;
 }

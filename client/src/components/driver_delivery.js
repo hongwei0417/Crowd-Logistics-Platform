@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
-import { Button, Table, DropdownButton, Dropdown } from 'react-bootstrap'
+import { Button, Table, DropdownButton, Dropdown, Spinner } from 'react-bootstrap'
 import { connect } from 'react-redux'
-import styles from '../css/Driver_delivery.module.css'
 import axios from 'axios'; 
 import ethFile from '../eth.json';
 import Transaction from '../contracts/Transaction.json'
+import { getOrder } from '../modules/eth'
 import { transform_status_to_chinese } from '../modules/tools'
+import OrderDetails from './order_details' 
 
 
 
@@ -13,7 +14,9 @@ export class driver_delivery extends Component {
 
   state = {
     contract: null,
-    loading: false,
+    order: null,
+    orderInfo: null,
+    loadingNumber: -1,
     showModal: false,
     orderList: []
   }
@@ -37,8 +40,28 @@ export class driver_delivery extends Component {
     console.log(res.data)
   };
 
-  search_orderInfo = async() => {
+  search_order = async (order, n) => {
+    
+    this.setState({loadingNumber: n})
+    const res = await axios.post('http://localhost:5000/orders/getOne', {
+      orderId: order._id,
+      population: ["uuid", "duid", "txnid"]
+    })
 
+    const orderDoc = res.data
+
+    const orderInfo = await getOrder(orderDoc.uuid, orderDoc.txnTime)
+
+    if(orderInfo) {
+      this.setState({
+        showModal: true,
+        orderInfo,
+        order: orderDoc,
+        loadingNumber: -1
+      })
+    } else {
+      alert('無法查看!')
+    }
   }
 
   update_status = async(e, n, id) => {
@@ -119,7 +142,7 @@ export class driver_delivery extends Component {
 
 
   render() {
-    const { orderList } = this.state
+    const { orderList, orderInfo, order, loadingNumber } = this.state
     return (
       <div>
         <Table striped bordered hover variant="dark" responsive>
@@ -167,7 +190,26 @@ export class driver_delivery extends Component {
                     </DropdownButton>
                   </td>
                   <td>
-                    <Button variant="secondary" block onClick={this.search_orderInfo}>點擊查看</Button>
+                    <Button
+                      block
+                      variant="secondary"
+                      onClick={() => this.search_order(order, i)}
+                    >
+                      {
+                        loadingNumber == i ? (
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                          />
+                        ) : null
+                      }
+                      {
+                        loadingNumber == i ? 'Loading' : '點擊查看'
+                      }
+                    </Button>
                   </td>
                 </tr>
               )
@@ -175,8 +217,26 @@ export class driver_delivery extends Component {
           }
           </tbody>
         </Table>
+        { 
+          orderInfo ? (
+            <OrderDetails
+              showModal={this.state.showModal}
+              handleClose={this.handleClose.bind(this)}
+              order={order}
+              orderInfo={orderInfo}
+            />
+          ) : null
+        }
       </div>
     )
+  }
+
+  handleClose = () => {
+    this.setState({
+      showModal: false,
+      orderInfo: null,
+      order: null
+    })
   }
 }
 

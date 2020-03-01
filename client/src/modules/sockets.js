@@ -1,6 +1,7 @@
 import io from 'socket.io-client'
 import { store } from '../index'
-import { addOrder, updateOrder } from '../actions/txnAction'
+import { addOrder, updateOrder, clearTXN } from '../actions/txnAction'
+import { get_Status_number } from '../modules/tools'
 
 
 class Socket {
@@ -32,8 +33,19 @@ class Socket {
 
     if(txnState[who].currentOrder) {
       this.socket.on(event, (orderDoc) => {
+
+        const number = get_Status_number(orderDoc.status)
+
         //回傳訂單資料
-        store.dispatch(updateOrder(orderDoc, who))
+        if(who == 'driver' && number == 4) { //司機接受訂單完成
+          store.dispatch(clearTXN())
+        } else {
+          store.dispatch(updateOrder(orderDoc, who))
+        }
+        
+        if(number == 4) {
+          this.removeEvent(event, who)
+        }
       });
       console.log(`${who == "sender" ? '寄送方' : '司機方'} [${this.id}]: 開始監聽 ${event}`)
     }
@@ -43,9 +55,9 @@ class Socket {
     this.socket.to(uid).emit(event, data);
   }
 
-  removeEvent(name) {
+  removeEvent(name, who) {
     this.socket.off(name);
-    console.log(`${this.id} 訂單監聽已結束!`)
+    console.log(`${who == "sender" ? '寄送方' : '司機方'} [${this.id}]: 結束監聽 ${name}`)
   }
 
 }

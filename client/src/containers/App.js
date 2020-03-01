@@ -17,12 +17,22 @@ import Order_notice from '../components/order_notification'
 
 class App extends Component {
 
+  state = {
+    getCount_interval: null
+  }
+
   componentDidMount = async () => {
     const { user, dispatch } = this.props
     if(user) {
       const socket = new Socket(user);
       dispatch({type: 'NEW_SOCKET', socket})
+      
     }
+  }
+
+
+  componentWillUnmount() {
+    clearInterval(this.state.getCount_interval)
   }
 
 

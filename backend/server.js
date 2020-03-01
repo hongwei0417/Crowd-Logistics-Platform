@@ -18,7 +18,8 @@ const port = process.env.PORT || 5000;
 
 var server = Server(app);
 global.io = Socket(server);
-global.clients = {};
+global.clients = {}; //儲存所有上限使用者
+
 
 app.use(cors());
 app.use(express.json());

@@ -5,7 +5,7 @@ import { transform_status_to_chinese, get_Status_number } from '../modules/tools
 
 const order_details = (props) => {
 
-  const { showModal, handleClose, currentOrder, orderInfo } = props
+  const { showModal, handleClose, order, orderInfo } = props
 
   const className = 'text-center align-middle'
   
@@ -30,59 +30,53 @@ const order_details = (props) => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className='p-0'>
-          <Table striped bordered hover variant="dark" className='m-0'>
+          <Table responsive striped bordered hover variant="dark" className='m-0'>
             <tbody>
               <tr>
-                <td className={className}>訂單編號</td>
-                <td colSpan="5" className={className}>{currentOrder.id}</td>
+                <td className={className} colSpan="4">訂單編號</td>
+                <td className={className} colSpan="11">{order.id}</td>
               </tr>
               <tr>
-                <td className={className}>訂單日期</td>
-                <td colSpan="5" className={className}>{number_to_date(currentOrder.txnTime)}</td>
+                <td className={className} colSpan="4">訂單日期</td>
+                <td className={className} colSpan="11">{number_to_date(order.txnTime)}</td>
               </tr>
               <tr>
-                <td className={className}>訂單狀態</td>
-                <td colSpan="5" className={className}>{transform_status_to_chinese(currentOrder.status)}</td>
+                <td className={className} colSpan="3">貨物重量</td>
+                <td className={className} colSpan="3">{`${orderInfo[7]}kg`}</td>
+                <td className={className} colSpan="3">運送方式</td>
+                <td className={className} colSpan="2">{orderInfo[5] ? '機車' : '貨車'}</td>
+                <td className={className} colSpan="3">是否為急件</td>
+                <td className={className} colSpan="1">{orderInfo[6] ? '是' : '否'}</td>
               </tr>
               <tr>
-                <td className={className}>區塊編號</td>
-                <td className={className}>{currentOrder.txnid.receipt.blockNumber}</td>
-                <td className={className}>交易序號</td>
-                <td className={className}>{currentOrder.txnid.receipt.transactionHash}</td>
+                <td className={className} colSpan="2">區塊編號</td>
+                <td className={className} colSpan="2">{order.txnid.receipt.blockNumber}</td>
+                <td className={className} colSpan="2">交易序號</td>
+                <td className={className} colSpan="9">{order.txnid.receipt.transactionHash}</td>
               </tr>
               <tr>
-                <td className={className}>司機姓名</td>
-                <td className={className}>{currentOrder.duid.username}</td>
-                <td className={className}>司機帳戶</td>
-                <td className={className}>{currentOrder.duid.account.address}</td>
+                <td className={className} colSpan="2">司機姓名</td>
+                <td className={className} colSpan="5">{order.duid.username}</td>
+                <td className={className} colSpan="2">司機帳戶</td>
+                <td className={className} colSpan="6">{order.duid.account.address}</td>
               </tr>
               <tr>
-                <td className={className}>收貨地點</td>
-                <td colSpan="5" className={className}>{orderInfo[1]}</td>
+                <td className={className} colSpan="3">收貨地點</td>
+                <td className={className} colSpan="12">{orderInfo[1]}</td>
               </tr>
               <tr>
-                <td className={className}>送貨地點</td>
-                <td colSpan="5" className={className}>{orderInfo[2]}</td>
+                <td className={className} colSpan="3">送貨地點</td>
+                <td className={className} colSpan="12">{orderInfo[2]}</td>
               </tr>
               <tr>
-                <td className={className}>收件人</td>
-                <td colSpan="5" className={className}>{orderInfo[3]}</td>
+                <td className={className} colSpan="2">收件人</td>
+                <td className={className} colSpan="5">{orderInfo[3]}</td>
+                <td className={className} colSpan="2">聯繫方式</td>
+                <td className={className} colSpan="6">{orderInfo[4]}</td>
               </tr>
               <tr>
-                <td className={className}>聯繫方式</td>
-                <td colSpan="5" className={className}>{orderInfo[4]}</td>
-              </tr>
-              <tr>
-                <td className={className}>運送方式</td>
-                <td colSpan="5" className={className}>{orderInfo[5] ? '機車' : '貨車'}</td>
-              </tr>
-              <tr>
-                <td className={className}>是否為急件</td>
-                <td colSpan="5" className={className}>{orderInfo[6] ? '是' : '否'}</td>
-              </tr>
-              <tr>
-                <td className={className}>貨物重量</td>
-                <td colSpan="5" className={className}>{`${orderInfo[7]}kg`}</td>
+                <td className={className} colSpan="3">訂單狀態</td>
+                <td className={className} colSpan="12">{transform_status_to_chinese(order.status)}</td>
               </tr>
             </tbody>
           </Table>

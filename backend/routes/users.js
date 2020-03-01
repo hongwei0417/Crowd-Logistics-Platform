@@ -4,6 +4,10 @@ import { newAccount, getBalance } from '../modules/eth'
 
 const router = Router()
 
+const get_users_count = (req, res) => {
+  res.json(Object.values(clients).length)
+}
+
 const get_all_user = async (req, res) => {
   const users = await User.find()
   res.json(users)
@@ -149,6 +153,7 @@ const test = async (req, res) => {
 
 
 router.route('/').get(get_all_user);
+router.route('/getUsersCount').get(get_users_count);
 router.route('/add').post(add_user);
 router.route('/update/:id').post(update_user);
 router.route('/login').post(login);

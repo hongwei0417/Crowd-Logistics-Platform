@@ -2,13 +2,8 @@ import React, { Component } from 'react'
 import { Button, Toast } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { clearTXN } from '../actions/txnAction'
-import { transform_status_to_chinese, get_Status_number } from '../modules/tools'
 import OrderDetails from './order_details'
 import { getOrder } from '../modules/eth'
-
-
-
-
 
 
 export class order_notification extends Component {
@@ -23,6 +18,7 @@ export class order_notification extends Component {
 
   async componentDidMount() {
     this.handleOrderStatus()
+    this.handleClose.bind(this)
   }
 
   async componentDidUpdate(pp, ps) {
@@ -51,10 +47,10 @@ export class order_notification extends Component {
     
   }
 
-  handleClose = () => {
+  handleClose = async () => {
+
     const { clearTXN, socket } = this.props
 
-    socket.removeEvent('updateSendingStatus')
     //清空交易狀態
     clearTXN()
 
@@ -62,9 +58,18 @@ export class order_notification extends Component {
       showToast: false
     })
 
+    //停止監聽訂單更新
+    socket.removeEvent('updateOrder', 'sender')
   }
 
-  handleSeeOrder = async () => {
+  handleCloseDetails = () => {
+    this.setState({
+      orderInfo: null,
+      showModal: false
+    })
+  }
+
+  search_order = async () => {
     const { user, currentOrder } = this.props
     const orderInfo = await getOrder(user, currentOrder.txnTime)
 
@@ -80,8 +85,8 @@ export class order_notification extends Component {
 
  
   render() {
-    if(this.state.showToast) {
-      const { headerMsg, status, orderInfo } = this.state
+    const { headerMsg, status, orderInfo, showToast, showModal } = this.state
+    if(showToast) {
       const { currentOrder } = this.props
       const { blockNumber, transactionHash } = currentOrder.txnid.receipt
       return (
@@ -89,8 +94,8 @@ export class order_notification extends Component {
           <Toast
             className='position-fixed'
             style={{top: '10vh', right: '20px', 'zIndex': '10'}}
-            show={this.state.showToast}
-            onClose={this.handleClose}
+            show={showToast}
+            onClose={this.handleClose.bind(this)}
             animation={true}
           >
             <Toast.Header>
@@ -108,7 +113,7 @@ export class order_notification extends Component {
                   <div>{`區塊編號：${blockNumber}`}</div>
                   <div className='text-truncate'>{`交易序號：${transactionHash}`}</div>
                   <div className='text-truncate'>{`司機地址：${currentOrder.duid.account.address}`}</div>
-                  <Button variant="link" className='float-right font-weight-bold pr-0' onClick={this.handleSeeOrder}>查看訂單</Button>
+                  <Button variant="link" className='float-right font-weight-bold pr-0' onClick={this.search_order}>查看訂單</Button>
                 </div>
               ) : null}
             </Toast.Body>
@@ -116,9 +121,9 @@ export class order_notification extends Component {
           { 
             orderInfo ? (
               <OrderDetails
-                showModal={this.state.showModal}
-                handleClose={this.handleClose.bind(this)}
-                currentOrder={currentOrder}
+                showModal={showModal}
+                handleClose={this.handleCloseDetails.bind(this)}
+                order={currentOrder}
                 orderInfo={orderInfo}
               />
             ) : null
@@ -133,9 +138,6 @@ export class order_notification extends Component {
     return date.toLocaleString()
   }
 
-  handleClose = () => {
-    this.setState({showModal: false})
-  }
 }
 
 const mapStateToProps = state => {

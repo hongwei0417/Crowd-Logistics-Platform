@@ -20,7 +20,6 @@ const importStyles = () => {
   )
 }
 
-
 export class order_modal extends Component {
 
   state = {
@@ -109,7 +108,6 @@ export class order_modal extends Component {
     }
     
   }
-
 
   number_to_date = (number) => {
     let date = new Date(parseInt(number));

@@ -31,7 +31,7 @@ const addOrder = async (req, res) => {
   
 }
 
-const getOrder = async (req, res) => {
+const getUserOrder = async (req, res) => {
 
   try {
     const { uid, population } = req.body
@@ -62,6 +62,21 @@ const getOrder = async (req, res) => {
   
 }
 
+const getOneOrder = async (req, res) => {
+  try {
+    const { orderId, population } = req.body
+
+    const orders = await Order.findById(orderId).populate(population).exec()
+
+    res.json(orders)
+
+  } catch (error) {
+    
+    res.json('Fail!')
+    
+  }
+}
+
 const updateOrderStatus = async (req, res) => {
   const { orderId, status, who, event } = req.body
 
@@ -77,7 +92,7 @@ const updateOrderStatus = async (req, res) => {
   switch(who) {
     case "sender":
       triggerData.client = orderDoc.duid._id
-      triggerData.data = status == "completed" ? null : orderDoc
+      triggerData.data = orderDoc
       break;
     case "driver":
       triggerData.client = orderDoc.uuid._id
@@ -101,7 +116,8 @@ const test = async (req, res) => {
 }
 
 router.route('/add').post(addOrder)
-router.route('/get/:type').post(getOrder)
+router.route('/get/:type').post(getUserOrder)
+router.route('/getOne').post(getOneOrder)
 router.route('/updateStatus').post(updateOrderStatus)
 router.route('/test').post(test)
 

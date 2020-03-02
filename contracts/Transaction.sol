@@ -12,7 +12,7 @@ contract Transaction {
 
   event order_time(address, uint); //交易時間
   event get_match(address, address); //取得配對合約
-  event search_drivers(address); //搜尋附近司機
+  event search_drivers(address); //觸發搜尋附近司機
   event notice_drivers(address); //通知附近司機
   
   

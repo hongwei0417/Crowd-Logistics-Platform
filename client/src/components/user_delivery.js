@@ -5,7 +5,7 @@ import ComfirmPage from './UD_status_pages/confirm_page'
 import OrderPage from './UD_status_pages/order_page'
 import ethFile from '../eth.json';
 import Navbar from '../components/navbar.js'
-import Modal from '../components/modal'
+import Modal from './modal'
 import Transaction from '../contracts/Transaction.json'
 
 

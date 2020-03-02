@@ -77,6 +77,24 @@ const getOneOrder = async (req, res) => {
   }
 }
 
+const getOneOrderByTxn = async (req, res) => {
+  try {
+    const { uid, txnTime, population } = req.body
+
+    const orders = await Order.findOne({
+      uuid: uid,
+      txnTime
+    }).populate(population).exec()
+
+    res.json(orders)
+
+  } catch (error) {
+    
+    res.json('Fail!')
+    
+  }
+}
+
 const updateOrderStatus = async (req, res) => {
   const { orderId, status, who, event } = req.body
 
@@ -118,6 +136,7 @@ const test = async (req, res) => {
 router.route('/add').post(addOrder)
 router.route('/get/:type').post(getUserOrder)
 router.route('/getOne').post(getOneOrder)
+router.route('/getOneByTxn').post(getOneOrderByTxn)
 router.route('/updateStatus').post(updateOrderStatus)
 router.route('/test').post(test)
 

@@ -34,3 +34,10 @@ export const get_Status_number = (status) => {
       return 4
   }
 }
+
+export const transform_unix_toLocal = (number) => {
+
+  const date = new Date(parseInt(number)*1000)
+
+  return date.toLocaleString()
+}

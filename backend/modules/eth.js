@@ -13,18 +13,31 @@ export const newAccount = async () => {
 export const getBalance = async (addr) => {
 
   const balance = await web3.eth.getBalance(addr)
+  const ether = parseFloat(web3.utils.fromWei(balance, 'ether'))
 
-  return balance
+  return ether.toFixed(18)
 }
 
 export const sendEther = async (addr, ether) => {
 
   const accounts = await web3.eth.getAccounts()
+  const wei = web3.utils.toWei(ether, 'ether')
+
+  let accountNumber = 0
+
+  for(let i = 0; i < accounts.length; i++) {
+    const balance = await web3.eth.getBalance(accounts[i])
+    if(balance < wei) continue
+    else {
+      accountNumber = i;
+      break;
+    }
+  }
 
   const receipt = await web3.eth.sendTransaction({
-    from: accounts[0],
+    from: accounts[accountNumber],
     to: addr,
-    value: ether
+    value: web3.utils.toWei(ether, 'ether')
   })
 
   return receipt

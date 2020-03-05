@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import Navbar from '../components/navbar.js'
-import { Button, Card, Accordion, InputGroup, FormControl, Spinner } from 'react-bootstrap'
+import { Badge, Button, Card, Accordion, InputGroup, FormControl, Spinner } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import axios from 'axios'; 
 import styles from '../css/Buy_Page.module.css'
@@ -11,8 +11,8 @@ import styles from '../css/Buy_Page.module.css'
 export class Buy_Page extends Component {
 
   state = {
-    balance: "",
-    ether: "",
+    balance: 0,
+    ether: 0,
     loading: false
   }
 
@@ -31,17 +31,31 @@ export class Buy_Page extends Component {
     const res = await axios.post('http://localhost:5000/users/getBalance', {
       address: this.props.user.account.address
     })
+
     this.setState({
-      balance: parseInt(res.data)
+      balance: parseFloat(res.data),
+      loading: false,
     })
   }
 
   setEther = (e) => {
-    this.setState({
-      ether: e.target.value
-    })
+
+    let NT = parseInt(e.target.value)
+    let ether = (NT / 6792.26)
+
+    console.log(ether)
+    this.setState({ether})
   }
-  
+
+  etherFixed = (ether) => {
+
+    if(ether) {
+      return ether.toFixed(4)
+    } else {
+      return 0
+    }
+    
+  }
   
   buy = async () => {
     const { ether } = this.state
@@ -53,7 +67,7 @@ export class Buy_Page extends Component {
 
     const receipt = await axios.post("http://localhost:5000/transactions/sendEther", {
       address: user.account.address,
-      ether: parseInt(ether)
+      ether: ether.toFixed(18).toString()
     })
 
     this.setState({
@@ -62,14 +76,10 @@ export class Buy_Page extends Component {
 
     setTimeout(() => {
       this.updateEther()
-      this.setState({
-        loading: false
-      })
-      // this.acc.click()
-      console.log(receipt)
     }, 2000);
 
   }
+
   
   render() {
     const { user, history } = this.props
@@ -86,15 +96,15 @@ export class Buy_Page extends Component {
                 </Accordion.Toggle>
                 <Accordion.Collapse eventKey="0">
                   <Card.Body>
-                    <Card.Title>請輸入要購買的以太幣</Card.Title>
-                    <Card.Text>單位使用：wei</Card.Text>
+                    <Card.Title>請輸入要付款的台幣</Card.Title>         
                     <InputGroup className="mb-3">
                       <FormControl
-                        placeholder="Enter how much wei you want to buy..."
+                        placeholder="Enter how much NT dollars you want to pay..."
                         style={{textAlign: 'center'}}
                         onChange={this.setEther}
                       />
                     </InputGroup>
+                    <h5 className='mb-3'><Badge variant="warning">{`可以購買到 ${this.etherFixed(this.state.ether)} 以太幣`}</Badge></h5>
                     <Button variant="primary" disabled={this.state.loading} onClick={this.buy}>
                       {
                         this.state.loading ? (
@@ -113,7 +123,7 @@ export class Buy_Page extends Component {
                     </Button>
                   </Card.Body>
                 </Accordion.Collapse>
-                <Card.Footer className={'bg-success text-white'} variant="flat">{`目前的以太幣：${this.state.balance} (wei)`}</Card.Footer>  
+                <Card.Footer className={'bg-success text-white'} variant="flat">{`目前的以太幣：${this.etherFixed(this.state.balance)} ETH`}</Card.Footer>  
               </Card>
             </Accordion>
           </div>

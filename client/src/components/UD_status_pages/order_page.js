@@ -1,25 +1,28 @@
 import React, { Component } from 'react'
-import { Button, Card, Form, Row, Col, Accordion, ListGroup, Spinner } from 'react-bootstrap'
+import { Button, Badge, Card, Form, Row, Col, Accordion, ListGroup, Spinner } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import styles from '../../css/Sender_delivery.module.css'
 import SearchModal from '../modal'
+import CommitModal from '../modal'
 import axios from 'axios'; 
 import { updateOrder } from '../../actions/txnAction'
 import { get_Status_number } from '../../modules/tools'
+import web3 from 'web3'
 
 
 
 export class order_page extends Component {
 
   state = {
-    balance: "",
+    balance: 0,
     open: false,
     loading: false,
     orderInfo: {
       service: 0,
       isUrgent: false,
     },
-    showModal: false,
+    showSearchModal: false,
+    showCommitModal: false,
     txnData: {
       txnDoc: null,
       receipt: null
@@ -27,6 +30,8 @@ export class order_page extends Component {
     drivers: [],
     second: 10,
     number: 0,
+    totalAmount: 0,
+    sufficient: false
   }
 
   constructor(props) {
@@ -37,15 +42,15 @@ export class order_page extends Component {
   }
 
   async componentDidUpdate() {
-    const { showModal, loading } = this.state
+    const { showSearchModal, loading } = this.state
     const { currentOrder } = this.props
 
     if(currentOrder) {
       const number = get_Status_number(currentOrder.status) 
 
-      if(number > 1 && loading && showModal) {
+      if(number > 1 && loading && showSearchModal) {
         this.setState({
-          showModal: false,
+          showSearchModal: false,
           loading: false,
         })
       }
@@ -66,15 +71,55 @@ export class order_page extends Component {
       address: this.props.user.account.address
     })
     this.setState({
-      balance: parseInt(res.data)
+      balance: parseFloat(res.data)
     })
   }
 
-  //訂單處理1
-  placeOrder = async (e) => {
+  checkOrder = async (e) => {
     e.preventDefault()
 
     this.setState({loading: true})
+    
+    const { accounts, contract } = this.props
+    const { orderInfo, balance } = this.state
+    const { user } = this.props
+    const options = { from: accounts[0], gas: 6721975, gasPrice: 20000000000 }
+
+    const gasNeed = await contract.methods.start_transaction(
+      user.account.address,
+      orderInfo.dTime,
+      orderInfo.dlStart,
+      orderInfo.dlEnd,
+      orderInfo.rName,
+      orderInfo.rContact,
+      orderInfo.service,
+      orderInfo.isUrgent,
+      parseInt(orderInfo.boxSize)
+    ).estimateGas(options)
+
+    let userHas = web3.utils.toWei(balance.toString(), 'ether')
+    let amounut = gasNeed * (10**10)
+    let sufficient = false
+
+
+    //判斷以太幣是否充足
+    if(parseFloat(userHas) > amounut) {
+      sufficient = true
+    }
+
+    this.setState({
+      totalAmount: parseFloat(web3.utils.fromWei((amounut).toString(), 'ether')),
+      showCommitModal: true,
+      sufficient
+    })
+
+    console.log("確認訂單...")
+  }
+
+  //訂單處理1
+  placeOrder = async () => {
+
+    this.setState({showCommitModal: false})
     
     const { accounts, contract } = this.props
     const { orderInfo } = this.state
@@ -139,7 +184,15 @@ export class order_page extends Component {
     //之後透過智能合約這個去篩選司機
     const res = await axios.post('http://localhost:5000/drivers/getDrivers', {uid: user._id})
 
-    await this.setState({drivers: res.data, showModal: true})
+    if(res.data.length == 0) {
+      alert('目前沒有司機!')
+      this.setState({
+        loading: false,
+        showSearchModal: false,
+      })
+      return
+    }
+    await this.setState({drivers: res.data, showSearchModal: true})
 
     this.select_drivers()
     console.log("程序3完成!")
@@ -204,6 +257,23 @@ export class order_page extends Component {
     }
   }
 
+  handleCancle = () => {
+    this.setState({
+      showCommitModal: false,
+      loading: false,
+    })
+  }
+
+  etherFixed = (ether) => {
+
+    if(ether) {
+      return ether.toFixed(4)
+    } else {
+      return 0
+    }
+    
+  }
+
   render() {
     return (
       <div>
@@ -220,7 +290,7 @@ export class order_page extends Component {
             <Accordion.Collapse eventKey="0" className={styles.flexbox}>
               <div className={styles._flexbox}>
                 <Card.Body className={styles.fb}>
-                  <Form onSubmit={(e) => this.placeOrder(e)}>
+                  <Form onSubmit={(e) => this.checkOrder(e)}>
                     <Form.Row>
                       <Form.Group as={Col}>
                         <Form.Label>選擇服務</Form.Label>
@@ -360,11 +430,29 @@ export class order_page extends Component {
                 </Card.Body>
               </div>
             </Accordion.Collapse>
-            <Card.Footer className="text-muted">{`目前的以太幣：${this.state.balance} (wei)`}</Card.Footer>
+            <Card.Footer className="text-muted">{`目前的以太幣：${this.etherFixed(this.state.balance)} ETH`}</Card.Footer>
           </Card>
         </Accordion>
+        <CommitModal
+          show={this.state.showCommitModal}
+          backdrop={false}
+          className={styles.modal}
+          title='請確認訂單金額'
+          size='sm'
+          footer={true}
+          handleClose={this.handleCancle.bind(this)}
+          handleCommit={this.placeOrder.bind(this)}
+          sufficient={this.state.sufficient}
+        >
+          <h4><Badge variant="warning">{`此筆訂單需要 ${this.etherFixed(this.state.totalAmount)} ETH`}</Badge></h4>
+          {
+            !this.state.sufficient ? (
+              <h4><Badge variant="danger">{`擁有以太幣不足!`}</Badge></h4>
+            ) : null
+          }
+        </CommitModal>
         <SearchModal
-          show={this.state.showModal}
+          show={this.state.showSearchModal}
           backdrop={false}
           className={styles.modal}
           title='搜尋司機請等候...'

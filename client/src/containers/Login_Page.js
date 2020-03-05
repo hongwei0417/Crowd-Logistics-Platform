@@ -41,6 +41,7 @@ class Login_Page extends Component {
     if(email != '' || password != '') {
       const res = await axios.post('http://localhost:5000/users/login', data)
       if(res.data.status) {
+
         this.props.dispatch(login(res.data.user))
 
       } else {

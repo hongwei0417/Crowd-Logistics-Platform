@@ -13,9 +13,8 @@ export const newAccount = async () => {
 export const getBalance = async (addr) => {
 
   const balance = await web3.eth.getBalance(addr)
-  const ether = parseFloat(web3.utils.fromWei(balance, 'ether'))
 
-  return ether.toFixed(18)
+  return balance
 }
 
 export const sendEther = async (addr, ether) => {
@@ -44,9 +43,7 @@ export const sendEther = async (addr, ether) => {
 }
 
 
-export const t = async () => {
-
-  const accounts = await web3.eth.getAccounts();
+export const sendEtherToOthers = async (senderData, receiverData, ether) => {
 
   // web3.eth.accounts.wallet.create(2)
 
@@ -60,15 +57,16 @@ export const t = async () => {
   //   value: '60000000000000000'
   // })
 
-  var privateKey = new Buffer.from("43652e75e292504b8fc83f52a39eea408ea32cdc94e3442d5c1a5c1f0241fc23", 'hex')
 
-  const n = await web3.eth.getTransactionCount("0xb76ffB0b1DEf2B567243c91f0Daa4654D0e0e5b6")
+  var privateKey = new Buffer.from((senderData.privateKey).slice(2), 'hex')
+
+  const n = await web3.eth.getTransactionCount(senderData.address)
   console.log(n)
   var rawTx = {
     nonce: web3.utils.toHex(n),
-    from: "0xb76ffB0b1DEf2B567243c91f0Daa4654D0e0e5b6",
-    to: "0xE2b4452EF907c68D1706E6792446A20d7f20a029",
-    value: web3.utils.toHex(50000000000000),
+    from: senderData.address,
+    to: receiverData.address,
+    value: web3.utils.toHex(ether),
     gas: web3.utils.toHex(6721975)
   }
   
@@ -85,19 +83,18 @@ export const t = async () => {
   //   value: '10000000000000000',
   //   gas: 6721975
   // })
-
-
-
   // console.log(r1)
   // console.log(r2)
 
-  const b1 = await web3.eth.getBalance("0xE2b4452EF907c68D1706E6792446A20d7f20a029")
-  const b2 = await web3.eth.getBalance("0xb76ffB0b1DEf2B567243c91f0Daa4654D0e0e5b6")
+  const b1 = await web3.eth.getBalance(senderData.address)
+  const b2 = await web3.eth.getBalance(receiverData.address)
+
+  console.log(receipt)
 
   console.log(b1)
   console.log(b2)
 
-  
+  return receipt
 
   // accounts.push(newAccount.address)
   // console.log(hdwallet.getWallet())

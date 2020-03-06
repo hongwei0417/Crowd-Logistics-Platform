@@ -6,10 +6,8 @@ import SearchModal from '../modal'
 import CommitModal from '../modal'
 import axios from 'axios'; 
 import { updateOrder } from '../../actions/txnAction'
-import { get_Status_number } from '../../modules/tools'
-import web3 from 'web3'
-
-
+import { get_Status_number, wei_to_ether, ether_to_wei } from '../../modules/tools'
+import { get_shipping_fee } from '../../modules/eth'
 
 export class order_page extends Component {
 
@@ -71,7 +69,7 @@ export class order_page extends Component {
       address: this.props.user.account.address
     })
     this.setState({
-      balance: parseFloat(res.data)
+      balance: res.data
     })
   }
 
@@ -97,18 +95,18 @@ export class order_page extends Component {
       parseInt(orderInfo.boxSize)
     ).estimateGas(options)
 
-    let userHas = web3.utils.toWei(balance.toString(), 'ether')
-    let amounut = gasNeed * (10**10)
+    let userHas = balance
+    let amount = get_shipping_fee(gasNeed, false)
     let sufficient = false
 
-
+    console.log(userHas, amount)
     //判斷以太幣是否充足
-    if(parseFloat(userHas) > amounut) {
+    if(userHas > amount) {
       sufficient = true
     }
 
     this.setState({
-      totalAmount: parseFloat(web3.utils.fromWei((amounut).toString(), 'ether')),
+      totalAmount: wei_to_ether(amount, true),
       showCommitModal: true,
       sufficient
     })
@@ -262,16 +260,6 @@ export class order_page extends Component {
       showCommitModal: false,
       loading: false,
     })
-  }
-
-  etherFixed = (ether) => {
-
-    if(ether) {
-      return ether.toFixed(4)
-    } else {
-      return 0
-    }
-    
   }
 
   render() {
@@ -430,7 +418,7 @@ export class order_page extends Component {
                 </Card.Body>
               </div>
             </Accordion.Collapse>
-            <Card.Footer className="text-muted">{`目前的以太幣：${this.etherFixed(this.state.balance)} ETH`}</Card.Footer>
+            <Card.Footer className="text-muted">{`目前的以太幣：${wei_to_ether(this.state.balance, true)} ETH`}</Card.Footer>
           </Card>
         </Accordion>
         <CommitModal
@@ -444,7 +432,7 @@ export class order_page extends Component {
           handleCommit={this.placeOrder.bind(this)}
           sufficient={this.state.sufficient}
         >
-          <h4><Badge variant="warning">{`此筆訂單需要 ${this.etherFixed(this.state.totalAmount)} ETH`}</Badge></h4>
+          <h4><Badge variant="warning">{`此筆訂單需要 ${this.state.totalAmount} ETH`}</Badge></h4>
           {
             !this.state.sufficient ? (
               <h4><Badge variant="danger">{`擁有以太幣不足!`}</Badge></h4>
@@ -505,8 +493,6 @@ export class order_page extends Component {
         [key]: value
       }
     })
-
-    console.log(this.state.orderInfo)
   }
 }
 

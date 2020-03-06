@@ -2,9 +2,10 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Table, Jumbotron, Button } from 'react-bootstrap'
 import { getOrder } from '../../modules/eth'
-import { transform_status_to_chinese } from '../../modules/tools'
+import { transform_status_to_chinese, wei_to_ether } from '../../modules/tools'
 import axios from 'axios'; 
 import { updateOrder } from '../../actions/txnAction'
+import { get_shipping_fee } from '../../modules/eth'
 
 export class confirm_page extends Component {
 
@@ -23,14 +24,22 @@ export class confirm_page extends Component {
   handleConfirm = async () => {
     const { currentOrder, updateOrder } = this.props
     
-    const res = await axios.post('http://localhost:5000/orders/updateStatus', {
+    const res1 = await axios.post('http://localhost:5000/orders/updateStatus', {
       orderId: currentOrder.id,
       status: "completed",
       who: "sender",
       event: 'confirmOrder'
     })
+
+    const res2 = await axios.post('http://localhost:5000/transactions/sendOthersEther', {
+      senderData: currentOrder.uuid.account,
+      receiverData: currentOrder.duid.account,
+      ether: get_shipping_fee(currentOrder.txnid.receipt.gasUsed, false)
+    })
+
+    console.log(res2)
     //更新狀態
-    updateOrder(res.data, "sender")
+    updateOrder(res1.data, "sender")
 
   }
 

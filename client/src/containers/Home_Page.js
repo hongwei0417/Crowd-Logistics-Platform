@@ -11,7 +11,6 @@ import { transform_unix_toLocal } from '../modules/tools'
 
 
 
-
 class Home_Page extends Component {
   state = {
     txnHash: "",

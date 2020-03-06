@@ -1,3 +1,5 @@
+import { getWeb3 } from './eth'
+
 const wating = "wating"
 const refused = "refused"
 const carrying = "carrying"
@@ -40,4 +42,32 @@ export const transform_unix_toLocal = (number) => {
   const date = new Date(parseInt(number)*1000)
 
   return date.toLocaleString()
+}
+
+
+export const ether_to_wei = (_ether) => {
+
+  const web3 = getWeb3()
+
+  let ether = _ether || 0
+
+  let wei = web3.utils.toWei(ether.toString(), 'ether')
+
+  return parseInt(wei)
+
+}
+
+export const wei_to_ether = (_wei, fixed) => {
+  
+  const web3 = getWeb3()
+
+  let wei = _wei || 0
+
+  let ether = parseFloat(web3.utils.fromWei(wei.toString(), 'ether'))
+
+  if(fixed) {
+    ether = ether.toFixed(4)
+  }
+
+  return ether
 }

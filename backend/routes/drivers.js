@@ -31,11 +31,11 @@ const add_driver = async (req, res) => {
 
     await newDriver.save()
 
-    res.json('Driver added!')
+    res.json({stauts: true, id: newDriver._id})
   } catch (error) {
 
     Promise.reject(error)
-    res.json('Driver add fail!')
+    res.json({stauts: false})
   }
 }
 

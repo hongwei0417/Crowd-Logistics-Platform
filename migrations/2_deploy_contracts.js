@@ -1,7 +1,7 @@
-var Sender_Auth = artifacts.require("./Sender_Auth.sol");
-var Driver_Auth = artifacts.require("./Driver_Auth.sol");
-var Sender_Request = artifacts.require("./Sender_Request.sol");
-var Driver_Request = artifacts.require("./Driver_Request.sol");
+// var Sender_Auth = artifacts.require("./Sender_Auth.sol");
+// var Driver_Auth = artifacts.require("./Driver_Auth.sol");
+// var Sender_Request = artifacts.require("./Sender_Request.sol");
+// var Driver_Request = artifacts.require("./Driver_Request.sol");
 var Transaction = artifacts.require("./Transaction.sol");
 var Sender = artifacts.require("./Sender.sol");
 

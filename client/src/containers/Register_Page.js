@@ -70,21 +70,43 @@ class Register_Page extends Component {
       return
     }
 
-    const data = {
+    const data1 = {
       email: email,
       password: password,
       username: username,
       phone_number: phone,
     }
     
-    const res = await axios.post('http://localhost:5000/users/register', data)
-    
-    if(res.data) {
-      alert('註冊成功! 請輸入帳密登入')
-      this.props.history.replace({pathname: '/'})
+    const res1 = await axios.post('http://localhost:5000/users/register', data1)
+    let fail = false
+    console.log(res1.data)
+
+    if(res1.data.status) {
+      const data2 = {
+        uid: res1.data.data._id,
+        driver_license: "xxxxxxxxxx",
+        license_plate: "xxxxxxxxxx",
+        insurance: "xxxxxxxxxx",
+        drunk_driving: "xxxxxxxxxx",
+        delivery_start_time: "8",
+        delivery_end_time: "14",
+        regular_place: "台中市"
+      }
+      const res2 = await axios.post('http://localhost:5000/drivers/add', data2)
+
+      console.log(res2.data)
+
+      if(res2.data.stauts) {
+        alert('註冊成功! 請輸入帳密登入')
+        this.props.history.replace({pathname: '/'})
+      } else {
+        fail = true
+      }
+    } else {
+      fail = true
     }
 
-
+    if(fail) alert("註冊失敗！")
   }
 
 

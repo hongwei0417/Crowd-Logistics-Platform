@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import { Button, Table, ButtonGroup, Card, ListGroup, ListGroupItem, Modal } from 'react-bootstrap'
-import { transform_status_to_chinese, get_Status_number } from '../modules/tools'
+import { Table, Modal } from 'react-bootstrap'
+import { transform_status_to_chinese, transform_unix_toLocal } from '../modules/tools'
 
 
 const order_details = (props) => {
@@ -8,11 +8,6 @@ const order_details = (props) => {
   const { showModal, handleClose, order, orderInfo } = props
 
   const className = 'text-center align-middle'
-  
-  const number_to_date = (number) => {
-    let date = new Date(parseInt(number));
-    return date.toLocaleString();
-  }
 
   return (
     <div>
@@ -38,7 +33,7 @@ const order_details = (props) => {
               </tr>
               <tr>
                 <td className={className} colSpan="4">訂單日期</td>
-                <td className={className} colSpan="11">{number_to_date(order.txnTime)}</td>
+                <td className={className} colSpan="11">{transform_unix_toLocal(order.txnTime)}</td>
               </tr>
               <tr>
                 <td className={className} colSpan="3">貨物重量</td>

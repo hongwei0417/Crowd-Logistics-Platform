@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Table, Jumbotron, Button } from 'react-bootstrap'
 import { getOrder } from '../../modules/eth'
-import { transform_status_to_chinese, wei_to_ether } from '../../modules/tools'
+import { transform_status_to_chinese, transform_unix_toLocal } from '../../modules/tools'
 import axios from 'axios'; 
 import { updateOrder } from '../../actions/txnAction'
 import { get_shipping_fee } from '../../modules/eth'
@@ -62,7 +62,7 @@ export class confirm_page extends Component {
               </tr>
               <tr>
                 <td className={className} colSpan="4">訂單日期</td>
-                <td className={className} colSpan="11">{this.number_to_date(currentOrder.txnTime)}</td>
+                <td className={className} colSpan="11">{transform_unix_toLocal(currentOrder.txnTime)}</td>
               </tr>
               <tr>
                 <td className={className} colSpan="3">貨物重量</td>

@@ -29,11 +29,11 @@ const add_user = async (req, res) => {
     });
   
     await newUser.save()
-  
-    res.json('User added!')
+
+    res.json({ status: true, id: newUser._id})
 
   } catch(e) {
-    console.log(e)
+    res.json({ status: false })
   }
   
 }
@@ -133,7 +133,7 @@ const register = async (req, res) => {
 
       await newUser.save()
 
-      res.json(true)
+      res.json({status: true, data: newUser})
     }
   })
 }

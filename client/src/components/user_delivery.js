@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { withRouter } from 'react-router'
 import { connect } from 'react-redux'
 import CarryingPage from './UD_status_pages/carrying_page'
 import ComfirmPage from './UD_status_pages/confirm_page'
@@ -15,7 +16,14 @@ export class user_delivery extends Component {
     contract: null
   }
 
-  async componentDidUpdate() {
+  async componentDidUpdate(pp) {
+    const preOrder = pp.currentOrder || {}
+    const curOrder = this.props.currentOrder || {}
+
+    // 被拒絕訂單後重整
+    if(curOrder.status == 'refused' && curOrder.status != preOrder.status) {
+      window.location.reload()
+    }
   }
 
   async componentDidMount() {
@@ -75,4 +83,4 @@ const mapDispatchToProps  = dispatch => {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(user_delivery)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(user_delivery))

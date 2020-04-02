@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Button, Badge, Card, Form, Row, Col, Accordion, ListGroup, Spinner } from 'react-bootstrap'
+import { withRouter } from 'react-router'
 import { connect } from 'react-redux'
 import styles from '../../css/Sender_delivery.module.css'
 import SearchModal from '../modal'
@@ -466,6 +467,8 @@ export class order_page extends Component {
   convert_date = (datetime) => {
     let date = new Date(datetime)
 
+    console.log(datetime)
+
     this.setOrder('dTime', date.getTime())
   }
 
@@ -511,4 +514,4 @@ const mapDispatchToProps  = dispatch => {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(order_page)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(order_page))

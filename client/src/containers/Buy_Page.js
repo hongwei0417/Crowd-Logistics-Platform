@@ -75,6 +75,11 @@ export class Buy_Page extends Component {
 
   }
 
+  test = () => {
+    return (
+      <div></div>
+    )
+  }
   
   render() {
     const { web3 } = this.state
